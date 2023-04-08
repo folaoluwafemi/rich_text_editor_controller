@@ -93,3 +93,8 @@ void dispose() {
 
 To create issues, prs or otherwise contribute in anyway, please visit
 the [github repo](https://github.com/folaoluwafemi/rich_text_editor_controller)
+
+
+[video example](https://user-images.githubusercontent.com/89414401/230739943-845d77cd-60df-4d90-ba5a-1c9d14634695.mov)
+
+
