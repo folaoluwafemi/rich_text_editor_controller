@@ -1,7 +1,6 @@
-import 'package:equatable/equatable.dart';
 import 'package:rich_text_editor_controller/src/text_editor/models/text_editor_models_barrel.dart';
 
-class TextDelta Colors{
+class TextDelta {
   final String char;
   final TextMetadata? metadata;
 
@@ -46,5 +45,13 @@ class TextDelta Colors{
   }
 
   @override
-  List<Object?> get props => [char, metadata];
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TextDelta &&
+          runtimeType == other.runtimeType &&
+          char == other.char &&
+          metadata == other.metadata;
+
+  @override
+  int get hashCode => char.hashCode ^ metadata.hashCode;
 }

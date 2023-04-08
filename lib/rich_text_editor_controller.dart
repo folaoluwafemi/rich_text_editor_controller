@@ -1,7 +1,4 @@
 library rich_text_editor_controller;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'package:rich_text_editor_controller/src/text_editor/text_editor_barrel.dart' show TextMetadata, TextDeltas, TextDelta;
+export 'package:rich_text_editor_controller/src/text_editor/controller/text_editor_controller.dart' show TextEditorController;

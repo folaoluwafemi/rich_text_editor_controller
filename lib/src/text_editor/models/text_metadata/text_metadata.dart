@@ -2,8 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:rich_text_editor_controller/src/text_editor/models/text_metadata/text_metadata_enum.dart';
-import 'package:rich_text_editor_controller/src/text_editor/utils/text_editor_extensions.dart';
-import 'package:rich_text_editor_controller/src/utils/function/util_functions/util_functions.dart';
+import 'package:rich_text_editor_controller/src/utils/utils_barrel.dart';
 
 part 'text_decoration_enum.dart';
 
@@ -169,6 +168,29 @@ class TextMetadata {
       'decoration': decoration.index,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TextMetadata &&
+          runtimeType == other.runtimeType &&
+          color == other.color &&
+          fontWeight == other.fontWeight &&
+          fontStyle == other.fontStyle &&
+          fontSize == other.fontSize &&
+          decoration == other.decoration &&
+          fontFeatures == other.fontFeatures &&
+          alignment == other.alignment;
+
+  @override
+  int get hashCode =>
+      color.hashCode ^
+      fontWeight.hashCode ^
+      fontStyle.hashCode ^
+      fontSize.hashCode ^
+      decoration.hashCode ^
+      fontFeatures.hashCode ^
+      alignment.hashCode;
 
   @override
   String toString() {

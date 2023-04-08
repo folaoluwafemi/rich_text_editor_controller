@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:rich_text_editor_controller/src/utils/utils_barrel.dart';
+part of 'extensions.dart';
 
 extension TextAlignExtension on TextAlign {
   Alignment get toAlignment {

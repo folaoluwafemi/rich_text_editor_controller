@@ -3,12 +3,16 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:rich_text_editor_controller/src/text_editor/models/text_editor_models_barrel.dart';
-
+import 'package:rich_text_editor_controller/src/utils/utils_barrel.dart';
+/// A controller for a text editor that provides a way to manage the text content, metadata, and deltas.
 class TextEditorController extends _TextEditorController {
+  /// The current text deltas of the editor.
+  ///
+  /// The `deltas` parameter can be provided to initialize the deltas when the controller is created. If `deltas` is not provided, the `text` parameter is used to create the deltas if it is not `null`.
   @override
-  // ignore: overridden_fields
   final TextDeltas deltas;
 
+  /// The default metadata used by the controller if no metadata is provided.
   static const TextMetadata defaultMetadata = TextMetadata(
     alignment: TextAlign.start,
     decoration: TextDecorationEnum.none,
@@ -18,14 +22,17 @@ class TextEditorController extends _TextEditorController {
     fontFeatures: null,
   );
 
+  /// Creates a new [TextEditorController] instance.
+  ///
+  /// The `text` parameter can be provided to initialize the controller with text. The `deltas` parameter can be provided to initialize the deltas when the controller is created. If `deltas` is not provided, the `text` parameter is used to create the deltas if it is not `null`.
   TextEditorController({
-    super.text,
+    String? text,
     TextDeltas? deltas,
-  }) : deltas = deltas ??
-            (text == null ? [] : TextDeltasUtils.deltasFromString(text)) {
+  }) : deltas = deltas ?? (text == null ? [] : TextDeltasUtils.deltasFromString(text)) {
     addListener(_internalControllerListener);
   }
 
+  /// Creates a copy of this controller with the same text, deltas, value, and metadata.
   @override
   TextEditorController copy() {
     return TextEditorController(
@@ -36,6 +43,7 @@ class TextEditorController extends _TextEditorController {
       ..metadata = metadata;
   }
 
+  /// Converts this controller to a map.
   Map<String, dynamic> toMap() {
     return {
       'text': text,
@@ -45,32 +53,36 @@ class TextEditorController extends _TextEditorController {
     };
   }
 
+  /// Creates a new [TextEditorController] instance from a map.
   factory TextEditorController.fromMap(Map<String, dynamic> map) {
     return TextEditorController(
-      text: map['text'] as String,
-      deltas: TextDeltasUtils.deltasFromList(
-        (map['deltas'] as List).cast<Map>(),
-      ),
+      text: map['text'] as String?,
+      deltas: TextDeltasUtils.deltasFromList((map['deltas'] as List).cast<Map>()),
     )
-      ..value = TextEditingValue.fromJSON(
-        (map['value'] as Map).cast<String, dynamic>(),
-      )
-      ..metadata = map['metadata'] == null
-          ? null
-          : TextMetadata.fromMap(
-              (map['metadata'] as Map).cast<String, dynamic>(),
-            );
+      ..value = TextEditingValue.fromJSON((map['value'] as Map<String, dynamic>).cast<String, dynamic>())
+      ..metadata = map['metadata'] == null ? null : TextMetadata.fromMap((map['metadata'] as Map<String, dynamic>).cast<String, dynamic>());
   }
 }
 
+/// A controller for a text editor that provides a way to manage the text content, metadata, and deltas.
+///
+/// This is the base class that is extended by [TextEditorController].
 class _TextEditorController extends TextEditingController {
+  /// The current text deltas of the editor.
   final TextDeltas deltas;
+
+  /// The metadata for the current selection in the editor.
   TextMetadata? _metadata;
 
+  /// Returns the metadata for the current selection in the editor.
   TextMetadata? get metadata => _metadata;
 
+  /// Returns whether the metadata toggle has been enabled.
+  ///
+  /// If the metadata toggle has been enabled, it is disabled and `true` is returned. Otherwise, `false` is returned.
   bool _metadataToggled = false;
 
+  /// Returns whether the metadata toggle has been enabled.
   bool get metadataToggled {
     if (_metadataToggled) {
       final bool value = _metadataToggled;
