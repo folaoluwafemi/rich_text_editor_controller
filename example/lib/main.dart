@@ -84,7 +84,7 @@ class _HomePageState extends State<HomePage> {
                   return Wrap(
                     children: [
                       ...MetadataValue.values.map(
-                            (value) => Padding(
+                        (value) => Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: MetadataButton(
                             metadata: controller.metadata ??
