@@ -13,16 +13,6 @@ extension TextDeltasExtension on TextDeltas {
     return stringBuffer.toString();
   }
 
-  void zipStringInto(String string) {
-    final List<String> chars = string.chars;
-    for (int i = 0; i < chars.length; ++i) {
-      if (i > length) {
-        add(TextDelta(char: chars[i]));
-        continue;
-      }
-    }
-  }
-
   TextDeltas get copy => List.from(this);
 }
 

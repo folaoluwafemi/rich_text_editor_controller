@@ -12,7 +12,7 @@ the alignment of the text.
 - change font style
 - change font family (TBD)
 - change font weight
-- change font features (TBD currenly supports changing 1)
+- change font features (TBD currently supports changing 1)
 - change text decoration
 
 ## Getting started

@@ -1,0 +1,72 @@
+import 'dart:math';
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:rich_text_editor_controller/src/text_editor/models/text_editor_models_barrel.dart';
+import 'package:rich_text_editor_controller/src/utils/utils_barrel.dart';
+
+part 'text_editor_controller.dart';
+
+class RichTextEditorController extends _RichTextEditorController {
+  ///This holds all the text changes per character and it's corresponding style/metadata
+  @override
+  // ignore: overridden_fields
+  final TextDeltas deltas;
+
+  static const TextMetadata defaultMetadata = TextMetadata(
+    alignment: TextAlign.start,
+    decoration: TextDecorationEnum.none,
+    fontSize: 14,
+    fontStyle: FontStyle.normal,
+    fontWeight: FontWeight.w400,
+    fontFeatures: null,
+  );
+
+  RichTextEditorController({
+    super.text,
+    TextDeltas? deltas,
+  }) : deltas = deltas ??
+            (text == null ? [] : TextDeltasUtils.deltasFromString(text)) {
+    addListener(_internalControllerListener);
+  }
+
+  @override
+  RichTextEditorController copy() {
+    return RichTextEditorController(
+      text: text,
+      deltas: deltas.copy,
+    )
+      ..value = value
+      ..metadata = metadata;
+  }
+
+  /// Data serializer method for this class
+  Map<String, dynamic> toMap() {
+    return {
+      'text': text,
+      'deltas': deltas.map((TextDelta delta) => delta.toMap()).toList(),
+      'metadata': metadata?.toMap(),
+      'value': value.toJSON(),
+    };
+  }
+
+  /// Data deserializer method for this class
+  ///
+  /// This is used to create a new instance of this class from a map
+  factory RichTextEditorController.fromMap(Map<String, dynamic> map) {
+    return RichTextEditorController(
+      text: map['text'] as String,
+      deltas: TextDeltasUtils.deltasFromList(
+        (map['deltas'] as List).cast<Map>(),
+      ),
+    )
+      ..value = TextEditingValue.fromJSON(
+        (map['value'] as Map).cast<String, dynamic>(),
+      )
+      ..metadata = map['metadata'] == null
+          ? null
+          : TextMetadata.fromMap(
+              (map['metadata'] as Map).cast<String, dynamic>(),
+            );
+  }
+}

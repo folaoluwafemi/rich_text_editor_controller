@@ -1,75 +1,19 @@
-import 'dart:math';
-import 'dart:ui';
-
-import 'package:flutter/material.dart';
-import 'package:rich_text_editor_controller/src/text_editor/models/text_editor_models_barrel.dart';
-import 'package:rich_text_editor_controller/src/utils/utils_barrel.dart';
-
-class RichTextEditorController extends _RichTextEditorController {
-  @override
-  // ignore: overridden_fields
-  final TextDeltas deltas;
-
-  static const TextMetadata defaultMetadata = TextMetadata(
-    alignment: TextAlign.start,
-    decoration: TextDecorationEnum.none,
-    fontSize: 14,
-    fontStyle: FontStyle.normal,
-    fontWeight: FontWeight.w400,
-    fontFeatures: null,
-  );
-
-  RichTextEditorController({
-    super.text,
-    TextDeltas? deltas,
-  }) : deltas = deltas ??
-            (text == null ? [] : TextDeltasUtils.deltasFromString(text)) {
-    addListener(_internalControllerListener);
-  }
-
-  @override
-  RichTextEditorController copy() {
-    return RichTextEditorController(
-      text: text,
-      deltas: deltas.copy,
-    )
-      ..value = value
-      ..metadata = metadata;
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'text': text,
-      'deltas': deltas.map((TextDelta delta) => delta.toMap()).toList(),
-      'metadata': metadata?.toMap(),
-      'value': value.toJSON(),
-    };
-  }
-
-  factory RichTextEditorController.fromMap(Map<String, dynamic> map) {
-    return RichTextEditorController(
-      text: map['text'] as String,
-      deltas: TextDeltasUtils.deltasFromList(
-        (map['deltas'] as List).cast<Map>(),
-      ),
-    )
-      ..value = TextEditingValue.fromJSON(
-        (map['value'] as Map).cast<String, dynamic>(),
-      )
-      ..metadata = map['metadata'] == null
-          ? null
-          : TextMetadata.fromMap(
-              (map['metadata'] as Map).cast<String, dynamic>(),
-            );
-  }
-}
+part of 'text_editor_controller_public.dart';
 
 class _RichTextEditorController extends TextEditingController {
+  ///This holds all the text changes per character and it's corresponding style/metadata
   final TextDeltas deltas;
+
+  /// This holds the state of the text styles.
+  /// on every selection change (collapsed or not) it's value defaults to that
+  /// of the [TextDelta] before it in the [deltas] list or the [defaultMetadata] if it's the first
   TextMetadata? _metadata;
 
   TextMetadata? get metadata => _metadata;
 
+  /// This is holds the state of the metadata change temporarily.
+  ///
+  /// it is reset when it's getter is called
   bool _metadataToggled = false;
 
   bool get metadataToggled {
@@ -90,6 +34,9 @@ class _RichTextEditorController extends TextEditingController {
     notifyListeners();
   }
 
+  /// returns a copy of this controller
+  ///
+  /// why? because all flutter [Listenable] objects are stored in memory and passed by reference
   _RichTextEditorController copy() {
     return _RichTextEditorController(
       text: text,
@@ -99,6 +46,7 @@ class _RichTextEditorController extends TextEditingController {
       ..metadata = metadata;
   }
 
+  /// returns a copy of this controller with the given parameters
   _RichTextEditorController copyWith({
     TextDeltas? deltas,
     TextEditingValue? value,
@@ -120,15 +68,6 @@ class _RichTextEditorController extends TextEditingController {
     addListener(_internalControllerListener);
   }
 
-  static const TextMetadata defaultMetadata = TextMetadata(
-    alignment: TextAlign.start,
-    decoration: TextDecorationEnum.none,
-    fontSize: 14,
-    fontStyle: FontStyle.normal,
-    fontWeight: FontWeight.w400,
-    fontFeatures: null,
-  );
-
   void _internalControllerListener() {
     final TextDeltas newDeltas = compareNewAndOldTextDeltasForChanges(
       TextDeltasUtils.deltasFromString(text),
@@ -140,7 +79,7 @@ class _RichTextEditorController extends TextEditingController {
   void setDeltas(TextDeltas newDeltas) {
     deltas.clear();
     deltas.addAll(newDeltas);
-    resetMetadataOnSelectionCollapsed();
+    if (selection.isCollapsed) resetMetadataOnSelectionCollapsed();
   }
 
   void resetMetadataOnSelectionCollapsed() {
@@ -155,7 +94,7 @@ class _RichTextEditorController extends TextEditingController {
                 .metadata
             : metadata) ??
         metadata ??
-        defaultMetadata;
+        RichTextEditorController.defaultMetadata;
 
     _metadata = _metadata?.combineWith(
           newMetadata,
@@ -200,7 +139,9 @@ class _RichTextEditorController extends TextEditingController {
           char: newChars[i],
           metadata: metadataToggled
               ? metadata
-              : deltaForMetadata.metadata ?? metadata ?? defaultMetadata,
+              : deltaForMetadata.metadata ??
+                  metadata ??
+                  RichTextEditorController.defaultMetadata,
         );
       }
     }
@@ -217,7 +158,9 @@ class _RichTextEditorController extends TextEditingController {
             char: newChars[i],
             metadata: metadataToggled
                 ? metadata
-                : deltaForMetadata?.metadata ?? metadata ?? defaultMetadata,
+                : deltaForMetadata?.metadata ??
+                    metadata ??
+                    RichTextEditorController.defaultMetadata,
           ),
         );
       }
@@ -226,7 +169,6 @@ class _RichTextEditorController extends TextEditingController {
   }
 
   void applyDefaultMetadataChange(TextMetadata changedMetadata) {
-    // metadata = changedMetadata.combineWith(metadata ?? defaultMetadata);
     metadata = changedMetadata;
   }
 
@@ -240,7 +182,7 @@ class _RichTextEditorController extends TextEditingController {
     changedMetadata ??=
         deltas[text.indexOf(selection.textBefore(text).chars.last)].metadata ??
             metadata ??
-            defaultMetadata;
+            RichTextEditorController.defaultMetadata;
 
     _metadata = _metadata?.combineWhatChanged(
           change,
@@ -263,6 +205,9 @@ class _RichTextEditorController extends TextEditingController {
     notifyListeners();
   }
 
+  /// Applies the [newMetadata] to the [deltas] in the [selection] by the [change].
+  ///
+  /// use [TextMetadataChange.all] to apply change to more than one metadata field change.
   TextDeltas applyMetadataToTextInSelection({
     required TextMetadata newMetadata,
     required TextDeltas deltas,
@@ -286,8 +231,10 @@ class _RichTextEditorController extends TextEditingController {
     return modifiedDeltas;
   }
 
+  /// Toggles the [TextMetadata.fontWeight] between [FontWeight.normal] and [FontWeight.w700].
   void toggleBold() {
-    final TextMetadata tempMetadata = metadata ?? defaultMetadata;
+    final TextMetadata tempMetadata =
+        metadata ?? RichTextEditorController.defaultMetadata;
     final TextMetadata changedMetadata = tempMetadata.copyWith(
       fontWeight: tempMetadata.fontWeight == FontWeight.normal
           ? FontWeight.w700
@@ -302,8 +249,10 @@ class _RichTextEditorController extends TextEditingController {
     );
   }
 
+  /// Toggles the [TextMetadata.fontStyle] between [FontStyle.normal] and [FontStyle.italic].
   void toggleItalic() {
-    final TextMetadata tempMetadata = metadata ?? defaultMetadata;
+    final TextMetadata tempMetadata =
+        metadata ?? RichTextEditorController.defaultMetadata;
 
     final TextMetadata changedMetadata = tempMetadata.copyWith(
       fontStyle: tempMetadata.fontStyle == FontStyle.italic
@@ -318,8 +267,10 @@ class _RichTextEditorController extends TextEditingController {
     );
   }
 
+  /// Toggles the [TextMetadata.decoration] between [TextDecorationEnum.none] and [TextDecorationEnum.underline].
   void toggleUnderline() {
-    final TextMetadata tempMetadata = metadata ?? defaultMetadata;
+    final TextMetadata tempMetadata =
+        metadata ?? RichTextEditorController.defaultMetadata;
 
     final TextMetadata changedMetadata = tempMetadata.copyWith(
       decoration: tempMetadata.decoration == TextDecorationEnum.underline
@@ -335,8 +286,10 @@ class _RichTextEditorController extends TextEditingController {
     );
   }
 
+  /// Toggles the [TextMetadata.decoration] between [TextDecorationEnum.none] and [TextDecorationEnum.lineThrough].
   void toggleSuperscript() {
-    final TextMetadata tempMetadata = metadata ?? defaultMetadata;
+    final TextMetadata tempMetadata =
+        metadata ?? RichTextEditorController.defaultMetadata;
 
     final TextMetadata changedMetadata = tempMetadata.copyWith(
       fontFeatures: tempMetadata.fontFeatures?.firstOrNull ==
@@ -353,8 +306,10 @@ class _RichTextEditorController extends TextEditingController {
     );
   }
 
+  /// Toggles the [TextMetadata.fontFeatures] between empty list and [FontFeature.subscripts()].
   void toggleSubscript() {
-    final TextMetadata tempMetadata = metadata ?? defaultMetadata;
+    final TextMetadata tempMetadata =
+        metadata ?? RichTextEditorController.defaultMetadata;
 
     final TextMetadata changedMetadata = tempMetadata.copyWith(
       fontFeatures: tempMetadata.fontFeatures?.firstOrNull ==
@@ -372,7 +327,8 @@ class _RichTextEditorController extends TextEditingController {
   }
 
   void changeColor(Color color) {
-    final TextMetadata changedMetadata = (metadata ?? defaultMetadata).copyWith(
+    final TextMetadata changedMetadata =
+        (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
       color: color,
     );
     changeStyleOnSelectionChange(
@@ -383,9 +339,38 @@ class _RichTextEditorController extends TextEditingController {
     );
   }
 
+  void changeFontSize(double fontSize) {
+    final TextMetadata changedMetadata =
+        (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
+      fontSize: fontSize,
+    );
+    changeStyleOnSelectionChange(
+      changedMetadata: changedMetadata,
+      change: TextMetadataChange.fontSize,
+      modifiedDeltas: deltas,
+      selection: selection,
+    );
+  }
+
+  /// Changes the [TextMetadata.alignment] to the given [alignment].
+  ///
+  /// note that you have to use [RichTextField] for changes made by this method to reflect.
+  /// or otherwise set the [TextField.alignment] parameter of your textfield to [TextMetadata.alignment]
+  /// while listening to changes in the controller.
+  /// example:
+  ///...
+  ///     ValueListenableBuilder<TextEditingValue>(
+  ///         valueListenable: controller,
+  ///         builder: (_, controllerValue, __) => TextField(
+  ///           controller: controller,
+  ///           textAlign: controller.metadata?.alignment ?? TextAlign.start,
+  ///         ),
+  ///       ),
+  /// ...
   void changeAlignment(TextAlign alignment) {
     applyDefaultMetadataChange(
-      (metadata ?? defaultMetadata).copyWith(alignment: alignment),
+      (metadata ?? RichTextEditorController.defaultMetadata)
+          .copyWith(alignment: alignment),
     );
   }
 
@@ -401,7 +386,8 @@ class _RichTextEditorController extends TextEditingController {
       spanChildren.add(
         TextSpan(
           text: delta.char,
-          style: delta.metadata?.style ?? defaultMetadata.style,
+          style: delta.metadata?.style ??
+              RichTextEditorController.defaultMetadata.style,
         ),
       );
     }
