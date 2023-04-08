@@ -2,9 +2,13 @@
 
 * Initial release: lacks documentation and is not very stable yet, I do not recommend you use in production 
 
- ## 0.0.1
+## 0.0.1
 * Added better documentation
 * Add example code
 * Add TextDecoration to exports
 * Add RichTextFormField
 * Add more methods to manipulate metadata
+
+
+## 0.0.2
+* reformat example file
