@@ -146,17 +146,6 @@ class TextMetadata {
     );
   }
 
-  @override
-  List<Object?> get props => [
-        color,
-        fontWeight,
-        fontStyle,
-        fontSize,
-        alignment,
-        decoration,
-        fontFeatures,
-      ];
-
   Map<String, dynamic> toMap() {
     return {
       'color': color.toSerializerString,

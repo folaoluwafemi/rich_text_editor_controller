@@ -23,11 +23,6 @@ class RichTextField extends TextField {
     super.textAlignVertical,
     super.textDirection,
     super.readOnly = false,
-    @Deprecated(
-      'Use `contextMenuBuilder` instead. '
-      'super feature was deprecated after v3.3.0-0.5.pre.',
-    )
-        super.toolbarOptions,
     super.showCursor,
     super.autofocus = false,
     super.obscuringCharacter = '•',
@@ -100,7 +95,6 @@ class _RichTextFieldState extends State<RichTextField> {
             textAlignVertical: widget.textAlignVertical,
             textDirection: widget.textDirection,
             readOnly: widget.readOnly,
-            toolbarOptions: widget.toolbarOptions,
             showCursor: widget.showCursor,
             autofocus: widget.autofocus,
             obscuringCharacter: widget.obscuringCharacter,

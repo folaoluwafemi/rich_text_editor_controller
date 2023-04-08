@@ -1,39 +1,98 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+A new Flutter package that let's you edit text in flutter text fields very easily, by
+simply just providing it a ```RichTextEditorController``` and ```RichTextField``` (
+just ```TextField``` that supports changing alignment).
+note that you can use the controller on a normal ```TextField``` but you will not be able to change
+the alignment of the text.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- change text alignment
+- change text color
+- change text size (TBD)
+- change font style
+- change font family (TBD)
+- change font weight
+- change font features (TBD currenly supports changing 1)
+- change text decoration
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+add this to your ```pubspec.yaml``` file
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  rich_text_editor_flutter: 0.0.1
+```
+
+or
+using pub
+
+```bash
+pub add rich_text_editor_flutter
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter/rich_text_editor_controller/rich_text_editor_controller.dart';
+
+...
+
+class _HomePageState extends State<HomePage> {
+
+  final RichTextEditorController controller = RichTextEditorController();
+
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          children: [
+            RichTextField(
+              controller: controller,
+              maxLines: 10, //use or apply style like in normal text fields
+              minLines: 1,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+}
+
+```
+
+Or use like normal controller
 
 ```dart
-const like = 'sample';
+ ...
+//or use normal TextField but without alignment support
+TextField(
+controller: controller,
+maxLines: 10,
+minLines:
+1
+,
+)
+,
+
+...
+```
+
+Don't forget to dispose your controller
+
+```dart
+  @override
+void dispose() {
+  controller.dispose();
+  super.dispose();
+}
 ```
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+To create issues, prs or otherwise contribute in anyway, please visit
+the [github repo](https://github.com/folaoluwafemi/rich_text_editor_controller)

@@ -1,7 +1,7 @@
 name: rich_text_editor_controller
 description:
   A new Flutter package that let's you edit text in flutter text fields very easily, by
-  simply just providing it a RichTextEditorController and a .
+  simply just providing it a RichTextEditorController and RichTextField (just textfield that supports changing alignment).
 version: 0.0.1+1
 homepage: https://github.com/folaoluwafemi/rich_text_editor_controller
 repository: https://github.com/folaoluwafemi/rich_text_editor_controller
