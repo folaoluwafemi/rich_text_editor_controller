@@ -1,5 +1,6 @@
 import 'package:rich_text_editor_controller/src/text_editor/models/text_editor_models_barrel.dart';
 
+/// Class that holds the style change for each character.
 class TextDelta {
   final String char;
   final TextMetadata? metadata;

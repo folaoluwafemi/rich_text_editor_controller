@@ -70,14 +70,11 @@ Or use like normal controller
 ```dart
  ...
 //or use normal TextField but without alignment support
-TextField(
-controller: controller,
-maxLines: 10,
-minLines:
-1
-,
-)
-,
+  TextField(
+    controller: controller,
+    maxLines: 10,
+    minLines: 1,
+  )
 
 ...
 ```

@@ -78,6 +78,7 @@ class _RichTextFieldState extends State<RichTextField> {
 
   @override
   Widget build(BuildContext context) {
+    //value listenable builder added to listen to changes in the controller and rebuild on text align change
     return ValueListenableBuilder<TextEditingValue>(
         valueListenable: controller,
         builder: (_, controllerValue, __) {
@@ -91,6 +92,7 @@ class _RichTextFieldState extends State<RichTextField> {
             textCapitalization: widget.textCapitalization,
             style: widget.style,
             strutStyle: widget.strutStyle,
+            //this is the only line that is different from the original text field
             textAlign: controller.metadata?.alignment ?? widget.textAlign,
             textAlignVertical: widget.textAlignVertical,
             textDirection: widget.textDirection,
