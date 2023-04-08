@@ -7,6 +7,7 @@ import 'package:rich_text_editor_controller/src/utils/utils_barrel.dart';
 
 part 'text_editor_controller.dart';
 
+/// This is the main controller for the text editor
 class RichTextEditorController extends _RichTextEditorController {
   ///This holds all the text changes per character and it's corresponding style/metadata
   @override

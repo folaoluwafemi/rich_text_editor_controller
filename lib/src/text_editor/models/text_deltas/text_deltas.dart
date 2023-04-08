@@ -16,5 +16,6 @@ extension TextDeltasExtension on TextDeltas {
     return stringBuffer.toString();
   }
 
+  ///creates a value copy of the list
   TextDeltas get copy => List.from(this);
 }

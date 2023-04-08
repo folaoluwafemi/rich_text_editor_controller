@@ -4,6 +4,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:rich_text_editor_controller/src/text_editor/text_editor_barrel.dart';
 
+/// A [TextField] that uses a [RichTextEditorController] to control the text.
+///
+/// The only relevance of this widget over [TextField] is that it listens to changes in the controller and rebuilds on text align change.
 class RichTextField extends TextField {
   @override
   // ignore: overridden_fields
@@ -78,7 +81,7 @@ class _RichTextFieldState extends State<RichTextField> {
 
   @override
   Widget build(BuildContext context) {
-    //value listenable builder added to listen to changes in the controller and rebuild on text align change
+    ///value listenable builder added to listen to changes in the controller and rebuild on text align change
     return ValueListenableBuilder<TextEditingValue>(
         valueListenable: controller,
         builder: (_, controllerValue, __) {
@@ -92,7 +95,8 @@ class _RichTextFieldState extends State<RichTextField> {
             textCapitalization: widget.textCapitalization,
             style: widget.style,
             strutStyle: widget.strutStyle,
-            //this is the only line that is different from the original text field
+
+            ///this is the only line that is different from the original text field
             textAlign: controller.metadata?.alignment ?? widget.textAlign,
             textAlignVertical: widget.textAlignVertical,
             textDirection: widget.textDirection,
