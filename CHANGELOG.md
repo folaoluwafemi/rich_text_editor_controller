@@ -1,3 +1,3 @@
-## 0.0.1
+## 0.0.1+1
 
-* TODO: Describe initial release.
+* Initial release: lacks documentation and is not very stable yet, I do not recommend you use in production 
