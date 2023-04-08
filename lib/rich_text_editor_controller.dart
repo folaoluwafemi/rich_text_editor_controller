@@ -6,6 +6,6 @@ export 'package:rich_text_editor_controller/src/text_editor/text_editor_barrel.d
         TextDeltas,
         TextDelta,
         RichTextEditorController,
-        TextDecorationEnum;
-export 'package:rich_text_editor_controller/src/text_editor/ui/widgets/rich_text_field.dart'
-    show RichTextField;
+        TextDecorationEnum,
+        RichTextFormField,
+        RichTextField;

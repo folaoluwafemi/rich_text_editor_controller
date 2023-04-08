@@ -16,7 +16,3 @@ extension TextAlignExtension on TextAlign {
     }
   }
 }
-
-extension ColorExtension on Color {
-  String get toSerializerString => value.toString().removeAll('#');
-}
