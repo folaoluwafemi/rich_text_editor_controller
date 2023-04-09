@@ -45,6 +45,8 @@ class TextMetadata {
     );
   }
 
+  /// This method is used to combine two [TextMetadata] objects relative to
+  /// the specified [TextMetadataChange]
   TextMetadata combineWhatChanged(
     TextMetadataChange change,
     TextMetadata other,
