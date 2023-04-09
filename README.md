@@ -1,7 +1,7 @@
 A very lightweight package that allows rich text editing as well as providing a simple and intuitive
 API for data serialization
 
-A Flutter package that let's you edit text in flutter text fields very easily, by
+A Flutter package that lets you edit text in flutter text fields very easily, by
 simply just providing it a ```RichTextEditorController``` and ```RichTextField``` (
 just ```TextField``` that supports changing alignment).
 note that you can use the controller on a normal ```TextField``` but you will not be able to change
@@ -99,5 +99,5 @@ For more elaborate example, [see here](https://github.com/folaoluwafemi/rich_tex
 
 ## Additional information
 
-To create issues, prs or otherwise contribute in anyway, please visit
-the [github repo](https://github.com/folaoluwafemi/rich_text_editor_controller)
+To create issues, prs or otherwise contribute in anyway see [contribution guide](https://github.com/folaoluwafemi/rich_text_editor_controller/blob/main/CONTRIBUTION_GUIDE.md).
+See our roadmap [here](https://github.com/folaoluwafemi/rich_text_editor_controller/blob/main/ROADMAP.md)
