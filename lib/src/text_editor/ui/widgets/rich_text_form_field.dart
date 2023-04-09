@@ -193,6 +193,6 @@ class _RichTextFormFieldState extends FormFieldState<String> {
             mouseCursor: _richTextFormField.mouseCursor,
             restorationId: _richTextFormField.restorationId,
           );
-        });
+        },);
   }
 }

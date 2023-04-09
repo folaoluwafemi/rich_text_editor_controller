@@ -7,7 +7,7 @@ void main() {
       test(
         'returns new string with input character removed',
         () async {
-          const String name = "Th00is i0s an0 e00xamp0l0e";
+          const String name = 'Th00is i0s an0 e00xamp0l0e';
 
           expect(name.removeAll('0'), 'This is an example');
         },
@@ -18,7 +18,7 @@ void main() {
       test(
         'returns a new list of characters in the string',
         () async {
-          const String name = "jamiu";
+          const String name = 'jamiu';
 
           expect(name.chars, ['j', 'a', 'm', 'i', 'u']);
         },

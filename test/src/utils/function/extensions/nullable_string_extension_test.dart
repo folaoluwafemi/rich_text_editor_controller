@@ -25,7 +25,7 @@ void main() {
       test(
         'returns false if string is not null or empty',
         () async {
-          const testItem = "@developerjamiu";
+          const String testItem = '@developerjamiu';
 
           expect(testItem.isNullOrEmpty, false);
         },

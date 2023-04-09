@@ -9,9 +9,9 @@ void main() {
       test(
         'returns true if iterable contains test item',
         () async {
-          const testItem = 1;
+          const int testItem = 1;
 
-          final result = items.containsWhere((item) => item == testItem);
+          final bool result = items.containsWhere((item) => item == testItem);
 
           expect(result, true);
         },
@@ -20,9 +20,9 @@ void main() {
       test(
         'returns false if iterable does not contain test item',
         () async {
-          const testItem = 8;
+          const int testItem = 8;
 
-          final result = items.containsWhere((item) => item == testItem);
+          final bool result = items.containsWhere((item) => item == testItem);
 
           expect(result, false);
         },

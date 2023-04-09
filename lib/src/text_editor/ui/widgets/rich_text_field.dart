@@ -144,7 +144,7 @@ class _RichTextFieldState extends State<RichTextField> {
             spellCheckConfiguration: widget.spellCheckConfiguration,
             magnifierConfiguration: widget.magnifierConfiguration,
           );
-        });
+        },);
   }
 
   @override
