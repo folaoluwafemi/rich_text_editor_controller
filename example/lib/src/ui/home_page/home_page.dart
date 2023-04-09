@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rich_text_editor_controller/rich_text_editor_controller.dart';
 
@@ -96,7 +97,9 @@ class _HomePageState extends State<HomePage> {
             MaterialButton(
               onPressed: () {
                 final Map<String, dynamic> data = controller.toMap();
-                print(data);
+                if (kDebugMode) {
+                  print(data);
+                }
                 //add call to your dto/repository here to save the data
               },
               color: Colors.deepOrange,
