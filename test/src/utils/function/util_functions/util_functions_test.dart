@@ -4,14 +4,14 @@ import 'package:rich_text_editor_controller/src/utils/function/util_functions/ut
 
 void main() {
   test('colorFromMap returns a Color object from a valid map', () {
-    final map = {'color': '0xFF0000'};
-    final color = UtilFunctions.colorFromMap(map);
+    final Map<String, String> map = {'color': '0xFF0000'};
+    final Color color = UtilFunctions.colorFromMap(map);
     expect(color, isInstanceOf<Color>());
     expect(color.value, equals(0xFF0000));
   });
 
   test('colorFromMap throws an exception when the map is invalid', () {
-    final map = {'color': 'invalid_value'};
+    final Map<String, String> map = {'color': 'invalid_value'};
     expect(() => UtilFunctions.colorFromMap(map), throwsFormatException);
   });
 }
