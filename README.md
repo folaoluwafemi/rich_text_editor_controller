@@ -77,12 +77,10 @@ Or use like normal controller
  ...
 //or use normal TextField but without alignment support
 TextField(
-controller: controller,
-maxLines: 10,
-minLines:
-1
-,
-)
+  controller: controller,
+  maxLines: 10,
+  minLines: 1,
+),
 
 ...
 ```
