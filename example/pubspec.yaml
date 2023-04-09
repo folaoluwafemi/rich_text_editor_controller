@@ -12,14 +12,13 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
+  rich_text_editor_controller: ^0.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^2.0.0
-  rich_text_editor_controller:
-    path: ../
 
 flutter:
 
