@@ -5,15 +5,19 @@ import 'package:rich_text_editor_controller/rich_text_editor_controller.dart';
 void main() {
   testWidgets('RichTextField should use the text alignment from the controller',
       (WidgetTester tester) async {
-    final controller = RichTextEditorController();
-    final richTextField =
-        RichTextField(controller: controller, textAlign: TextAlign.center);
+    final RichTextEditorController controller = RichTextEditorController();
+    final RichTextField richTextField = RichTextField(
+      controller: controller,
+      textAlign: TextAlign.center,
+    );
 
     await tester.pumpWidget(MaterialApp(home: Scaffold(body: richTextField)));
 
     // Verify that the text alignment is initially set to the center.
     expect(find.byType(TextField), findsOneWidget);
-    final textFieldWidget = tester.widget<TextField>(find.byType(TextField));
+    final TextField textFieldWidget = tester.widget<TextField>(
+      find.byType(TextField),
+    );
     expect(textFieldWidget.textAlign, TextAlign.center);
 
     // Update the controller's text alignment.
@@ -22,8 +26,9 @@ void main() {
 
     // Verify that the text alignment is now set to the right.
     expect(find.byType(TextField), findsOneWidget);
-    final updatedTextFieldWidget =
-        tester.widget<TextField>(find.byType(TextField));
+    final TextField updatedTextFieldWidget = tester.widget<TextField>(
+      find.byType(TextField),
+    );
     expect(updatedTextFieldWidget.textAlign, TextAlign.right);
   });
 }
