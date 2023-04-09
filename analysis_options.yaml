@@ -2,3 +2,12 @@ include: package:flutter_lints/flutter.yaml
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+linter:
+  rules:
+    always_declare_return_types: true
+    avoid_print: true
+    always_use_package_imports: true
+    prefer_relative_imports: false
+    no_logic_in_create_state: true
+    require_trailing_commas: true
+    prefer_single_quotes: true

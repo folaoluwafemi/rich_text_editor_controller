@@ -7,4 +7,4 @@ contribute to any of it's implementation. [click here for the guide to roadmap c
 - [ ] Add TextDirectionality support
   - Tag: ```directionality_support```
   - Status: ```pending```
-- [ ] 
+- [ ]
