@@ -1,3 +1,4 @@
+
 # Guide to contribution
 
 ## General
@@ -17,7 +18,8 @@
 If you wish to contribute to the roadmap, fork this [repo](https://github.com/folaoluwafemi/rich_text_editor_controller) at branch ```{ROADMAP-TAG}``` if the branch does not exist, feel free to create one in your fork.
 
 ## Code conventions
-- All variables MUST be strongly typed:
-  - Do `final RichTextEditorController controller = RichTextEditorController();` instead of `final controller = RichTextEditorController();`
-- All code MUST pass static analysis
+- All variables MUST be strongly typed except for local variables
+  - Do `final RichTextEditorController controller = RichTextEditorController();`
+  - Do `final controller = RichTextEditorController();` for local variable.
+- All code MUST pass static analysis.
 - DO NOT `ignore` any lint rule.
