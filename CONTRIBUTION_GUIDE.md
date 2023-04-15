@@ -1,3 +1,4 @@
+
 # Guide to contribution
 
 ## General
@@ -17,7 +18,6 @@
 If you wish to contribute to the roadmap, fork this [repo](https://github.com/folaoluwafemi/rich_text_editor_controller) at branch ```{ROADMAP-TAG}``` if the branch does not exist, feel free to create one in your fork.
 
 ## Code conventions
-- All variables MUST be strongly typed:
-  - Do `final RichTextEditorController controller = RichTextEditorController();` instead of `final controller = RichTextEditorController();`
-- All code MUST pass static analysis
+- All variables MUST be strongly typed except in instances where it is obvious what the variable type will be by it's assigned value. [see here](https://dart.dev/guides/language/effective-dart/design#dont-redundantly-type-annotate-initialized-local-variables) for clarity
+- All code MUST pass static analysis.
 - DO NOT `ignore` any lint rule.
