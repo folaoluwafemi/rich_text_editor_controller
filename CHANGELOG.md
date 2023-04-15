@@ -13,3 +13,9 @@
 ## 0.0.2
 * reformat example file
  
+
+## 0.0.3
+* update example project
+* update readme
+* add tests and coverage report for project
+* remove redundancies in project

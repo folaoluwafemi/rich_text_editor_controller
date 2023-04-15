@@ -29,7 +29,7 @@ add this to your ```pubspec.yaml``` file
 dependencies:
   flutter:
     sdk: flutter
-  rich_text_editor_flutter: 0.0.1
+  rich_text_editor_flutter: 0.0.3
 ```
 
 or
