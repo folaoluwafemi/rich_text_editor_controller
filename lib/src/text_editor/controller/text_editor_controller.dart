@@ -63,7 +63,9 @@ class _RichTextEditorController extends TextEditingController {
   _RichTextEditorController({
     super.text,
     TextDeltas? deltas,
-  }) : deltas = deltas ??
+    TextMetadata? metaData,
+  })  : _metadata = metaData ?? RichTextEditorController.defaultMetadata,
+        deltas = deltas ??
             (text == null ? [] : TextDeltasUtils.deltasFromString(text)) {
     addListener(_internalControllerListener);
   }

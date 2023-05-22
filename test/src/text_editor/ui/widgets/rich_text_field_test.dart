@@ -8,8 +8,9 @@ void main() {
     final RichTextEditorController controller = RichTextEditorController();
     final RichTextField richTextField = RichTextField(
       controller: controller,
-      textAlign: TextAlign.center,
+      textAlign: TextAlign.right,
     );
+    controller.changeAlignment(TextAlign.center);
 
     await tester.pumpWidget(MaterialApp(home: Scaffold(body: richTextField)));
 

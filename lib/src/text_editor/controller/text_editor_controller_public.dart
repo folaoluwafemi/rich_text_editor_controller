@@ -23,11 +23,22 @@ class RichTextEditorController extends _RichTextEditorController {
     fontFeatures: null,
   );
 
+  /// Constructs an instance of [RichTextEditorController] with the provided [text] and [deltas]
+  ///
+  /// if [delta] is not provided, it will be generated from the [text] and [metadata]
+  /// [metadata] is optional and if not provided, it will be set to [defaultMetadata]
   RichTextEditorController({
     super.text,
     TextDeltas? deltas,
-  }) : deltas = deltas ??
-            (text == null ? [] : TextDeltasUtils.deltasFromString(text)) {
+    TextMetadata? metadata,
+  })  : deltas = deltas ??
+            (text == null
+                ? []
+                : TextDeltasUtils.deltasFromString(
+                    text,
+                    metadata ?? defaultMetadata,
+                  )),
+        super(metaData: metadata) {
     addListener(_internalControllerListener);
   }
 
