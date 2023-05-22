@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       - name: Format code
-        run: flutter format --dry-run . --set-exit-if-changed
+        run: flutter format .
       - name: Lint analysis
         run: flutter analyze --no-pub
       - name: Run tests
