@@ -1,12 +1,12 @@
 name: rich_text_editor_controller
 description:
   A very lightweight package that allows rich text editing as well as providing a simple API for data serialization
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/folaoluwafemi/rich_text_editor_controller
 repository: https://github.com/folaoluwafemi/rich_text_editor_controller
 
 environment:
-  sdk: '>=2.19.0 <3.0.0'
+  sdk: '>=2.19.0 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:

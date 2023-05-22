@@ -19,3 +19,8 @@
 * update readme
 * add tests and coverage report for project
 * remove redundancies in project
+
+## 0.0.4
+* add more tests
+* Added `metadata` to controller constructor
+* added `metadata` or default metadata (if `metadata` is null) to delta initialization in `RichTextEditorController` constructor
