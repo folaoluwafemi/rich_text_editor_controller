@@ -20,6 +20,14 @@ class TextDelta {
     );
   }
 
+  @override
+  String toString() {
+    return '''
+TextDelta(
+  char: $char
+)''';
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'char': char,

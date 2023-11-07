@@ -25,6 +25,18 @@ class TextMetadata {
     this.fontFeatures,
   });
 
+  TextMetadata.fromTextStyle(
+    TextStyle style, {
+    this.alignment = TextAlign.start,
+  })  : color = style.color ?? Colors.black,
+        fontWeight = style.fontWeight ?? FontWeight.w400,
+        fontStyle = style.fontStyle ?? FontStyle.normal,
+        fontSize = style.fontSize ?? 14,
+        decoration = style.decoration == null
+            ? TextDecorationEnum.none
+            : TextDecorationEnum.fromDecoration(style.decoration!),
+        fontFeatures = style.fontFeatures;
+
   TextMetadata copyWith({
     Color? color,
     FontWeight? fontWeight,
@@ -148,6 +160,21 @@ class TextMetadata {
     );
   }
 
+  factory TextMetadata.fromMap(Map<String, dynamic> map) {
+    return TextMetadata(
+      color: UtilFunctions.colorFromMap(map),
+      fontWeight: FontWeight.values[(map['fontWeight'])],
+      fontStyle: FontStyle.values[(map['fontStyle'])],
+      fontSize: map['fontSize'] as double,
+      fontFeatures: (map['fontFeatures'] as List?)
+          ?.cast<Map<String, dynamic>>()
+          .map((e) => _fontFeatureFromMap(e))
+          .toList(),
+      alignment: TextAlign.values[(map['alignment'])],
+      decoration: TextDecorationEnum.values[(map['decoration'])],
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'color': color.toSerializerString,
@@ -195,21 +222,6 @@ TextMetadata{
       fontFeatures: $fontFeatures,
       alignment: $alignment
     }''';
-  }
-
-  factory TextMetadata.fromMap(Map<String, dynamic> map) {
-    return TextMetadata(
-      color: UtilFunctions.colorFromMap(map),
-      fontWeight: FontWeight.values[(map['fontWeight'])],
-      fontStyle: FontStyle.values[(map['fontStyle'])],
-      fontSize: map['fontSize'] as double,
-      fontFeatures: (map['fontFeatures'] as List?)
-          ?.cast<Map<String, dynamic>>()
-          .map((e) => _fontFeatureFromMap(e))
-          .toList(),
-      alignment: TextAlign.values[(map['alignment'])],
-      decoration: TextDecorationEnum.values[(map['decoration'])],
-    );
   }
 }
 

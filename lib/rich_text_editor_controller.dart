@@ -5,6 +5,7 @@ export 'package:rich_text_editor_controller/src/text_editor/text_editor_barrel.d
         TextMetadata,
         TextDeltas,
         TextDelta,
+        TextDeltasExtension,
         RichTextEditorController,
         TextDecorationEnum,
         RichTextFormField,

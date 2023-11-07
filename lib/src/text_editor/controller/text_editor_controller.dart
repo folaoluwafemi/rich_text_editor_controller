@@ -71,10 +71,30 @@ class _RichTextEditorController extends TextEditingController {
   }
 
   void _internalControllerListener() {
-    final TextDeltas newDeltas = compareNewAndOldTextDeltasForChanges(
+    TextDeltas newDeltas = compareNewAndOldTextDeltasForChanges(
       TextDeltasUtils.deltasFromString(text),
       deltas.copy,
     );
+
+    if (isListMode && newDeltas.length != deltas.length) {
+      print(
+        'delta coming in: ${newDeltas.fold('', (previousValue, element) {
+          return '$previousValue${element.char}';
+        })}.',
+      );
+
+      newDeltas = modifyDeltasForBulletListChange(
+        TextDeltasUtils.deltasFromString(text),
+        deltas.copy,
+      );
+
+      print(
+        'delta going out: ${newDeltas.fold('', (previousValue, element) {
+          return '$previousValue${element.char}';
+        })}.',
+      );
+    }
+
     setDeltas(newDeltas);
   }
 
@@ -113,11 +133,44 @@ class _RichTextEditorController extends TextEditingController {
     }
   }
 
+  static const String bulletPoint = ' • ';
+
+  List<TextDelta> modifyDeltasForBulletListChange(
+    List<TextDelta> modifiedDeltas,
+    List<TextDelta> oldDeltas,
+  ) {
+    final List<String> oldChars = oldDeltas.text.characters.toList();
+    final List<String> newChars = modifiedDeltas.text.characters.toList();
+
+    if (oldChars.length > newChars.length) return modifiedDeltas;
+
+    if (newChars.last == '\n') {
+      final TextDeltas deltas = modifiedDeltas.copy
+        ..replaceRange(
+          modifiedDeltas.length - 1,
+          modifiedDeltas.length,
+          '\n$bulletPoint'.characters.map(
+                (e) => TextDelta(
+                  char: e,
+                  metadata: RichTextEditorController.defaultMetadata
+                      .copyWith(color: Colors.black),
+                ),
+              ),
+        );
+      text = deltas.text;
+      selection = TextSelection.collapsed(offset: text.length);
+
+      return deltas;
+    }
+
+    return modifiedDeltas;
+  }
+
   TextDeltas compareNewAndOldTextDeltasForChanges(
     TextDeltas newDeltas,
     TextDeltas oldDeltas,
   ) {
-    final TextDeltas modifiedDelta = oldDeltas.copy;
+    final TextDeltas modifiedDeltas = oldDeltas.copy;
 
     final List<String> oldChars = oldDeltas.text.characters.toList();
     final List<String> newChars = newDeltas.text.characters.toList();
@@ -137,7 +190,7 @@ class _RichTextEditorController extends TextEditingController {
                     ? oldDeltas.last
                     : oldDeltas[i + 1]);
 
-        modifiedDelta[i] = modifiedDelta[i].copyWith(
+        modifiedDeltas[i] = modifiedDeltas[i].copyWith(
           char: newChars[i],
           metadata: metadataToggled
               ? metadata
@@ -149,13 +202,13 @@ class _RichTextEditorController extends TextEditingController {
     }
 
     if (oldChars.length > newChars.length) {
-      modifiedDelta.removeRange(minLength, oldChars.length);
+      modifiedDeltas.removeRange(minLength, oldChars.length);
     } else if (oldChars.length < newChars.length) {
       for (int i = minLength; i < newChars.length; i++) {
         final TextDelta? deltaForMetadata =
             i == minLength ? oldDeltas.lastOrNull : newDeltas[i - 1];
 
-        modifiedDelta.add(
+        modifiedDeltas.add(
           TextDelta(
             char: newChars[i],
             metadata: metadataToggled
@@ -167,11 +220,20 @@ class _RichTextEditorController extends TextEditingController {
         );
       }
     }
-    return modifiedDelta;
+    return modifiedDeltas;
   }
 
   void applyDefaultMetadataChange(TextMetadata changedMetadata) {
     metadata = changedMetadata;
+  }
+
+  bool get isListMode => indexOflListChar != null;
+
+  int? indexOflListChar;
+
+  void toggleListMode() {
+    indexOflListChar = indexOflListChar == null ? (deltas.length - 1) : null;
+    notifyListeners();
   }
 
   void changeStyleOnSelectionChange({

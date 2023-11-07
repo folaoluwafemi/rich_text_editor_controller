@@ -25,10 +25,11 @@ class RichTextEditorController extends _RichTextEditorController {
 
   /// Constructs an instance of [RichTextEditorController] with the provided [text] and [deltas]
   ///
-  /// if [delta] is not provided, it will be generated from the [text] and [metadata]
+  /// if [text] is not provided, it will be generated from the [deltas].
+  /// if [delta] is not provided, it will be generated from the [text] and [metadata].
   /// [metadata] is optional and if not provided, it will be set to [defaultMetadata]
   RichTextEditorController({
-    super.text,
+    String? text,
     TextDeltas? deltas,
     TextMetadata? metadata,
   })  : deltas = deltas ??
@@ -38,7 +39,10 @@ class RichTextEditorController extends _RichTextEditorController {
                     text,
                     metadata ?? defaultMetadata,
                   )),
-        super(metaData: metadata) {
+        super(
+          text: text ?? deltas?.text,
+          metaData: metadata,
+        ) {
     addListener(_internalControllerListener);
   }
 
