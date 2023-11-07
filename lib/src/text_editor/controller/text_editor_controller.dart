@@ -188,73 +188,6 @@ class _RichTextEditorController extends TextEditingController {
     return deltas;
   }
 
-  // TextDeltas compareNewAndOldTextDeltasForChanges(
-  //   TextDeltas newDeltas,
-  //   TextDeltas oldDeltas,
-  // ) {
-  //   final TextDeltas modifiedDeltas = oldDeltas.copy;
-  //
-  //   final List<String> oldChars = oldDeltas.text.characters.toList();
-  //   final List<String> newChars = newDeltas.text.characters.toList();
-  //
-  //   final int minLength = min(oldChars.length, newChars.length);
-  //   final bool? newIsMoreThanOld = newDeltas.length == oldDeltas.length
-  //       ? null
-  //       : newDeltas.length > oldDeltas.length;
-  //
-  //   for (int i = 0; i < minLength; i++) {
-  //     if (oldChars[i] != newChars[i]) {
-  //       final TextDelta deltaForMetadata = newIsMoreThanOld == null
-  //           ? oldDeltas[i]
-  //           : newIsMoreThanOld
-  //               ? (i <= 1 ? oldDeltas.first : oldDeltas[i - 1])
-  //               : (i > (oldDeltas.length - 2)
-  //                   ? oldDeltas.last
-  //                   : oldDeltas[i + 1]);
-  //
-  //       modifiedDeltas[i] = modifiedDeltas[i].copyWith(
-  //         char: newChars[i],
-  //         metadata: metadataToggled
-  //             ? metadata
-  //             : deltaForMetadata.metadata ??
-  //                 metadata ??
-  //                 RichTextEditorController.defaultMetadata,
-  //       );
-  //     }
-  //   }
-  //
-  //   if (oldChars.length > newChars.length) {
-  //     modifiedDeltas.removeRange(minLength, oldChars.length);
-  //   } else if (oldChars.length < newChars.length) {
-  //     for (int i = minLength; i < newChars.length; i++) {
-  //       TextDelta? deltaForMetadata =
-  //           i == minLength ? oldDeltas.lastOrNull : newDeltas[i - 1];
-  //
-  //       print(
-  //           'here: $i || ${deltaForMetadata?.char} || ${deltaForMetadata?.metadata?.style}');
-  //
-  //       modifiedDeltas.add(
-  //         TextDelta(
-  //           char: newChars[i],
-  //           metadata: metadataToggled
-  //               ? metadata
-  //               : deltaForMetadata?.metadata ??
-  //                   metadata ??
-  //                   RichTextEditorController.defaultMetadata,
-  //         ),
-  //       );
-  //     }
-  //   }
-  //
-  //   // print(
-  //   //   'delta going out: ${modifiedDeltas.fold('', (previousValue, element) {
-  //   //     return '$previousValue${element.metadata}';
-  //   //   })}.',
-  //   // );
-  //
-  //   return modifiedDeltas;
-  // }
-
   void applyDefaultMetadataChange(TextMetadata changedMetadata) {
     metadata = changedMetadata;
   }
@@ -265,12 +198,6 @@ class _RichTextEditorController extends TextEditingController {
 
   void toggleListMode() {
     indexOflListChar = indexOflListChar == null ? (deltas.length - 1) : null;
-    // changeStyleOnSelectionChange(
-    //   changedMetadata: RichTextEditorController.defaultMetadata,
-    //   change: TextMetadataChange.all,
-    //   modifiedDeltas: deltas,
-    //   selection: selection,
-    // );
     _metadataToggled = true;
     notifyListeners();
   }
