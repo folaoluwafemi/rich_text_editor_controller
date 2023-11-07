@@ -121,7 +121,7 @@ class _RichTextEditorController extends TextEditingController {
     }
   }
 
-  static const String bulletPoint = ' • ';
+  static const String bulletPoint = '•';
 
   List<TextDelta> modifyDeltasForBulletListChange(
     List<TextDelta> modifiedDeltas,
@@ -133,18 +133,26 @@ class _RichTextEditorController extends TextEditingController {
     if (oldChars.length > newChars.length) return modifiedDeltas;
 
     if (newChars.last == '\n') {
+      final String value = '\n $bulletPoint ';
+
       final TextDeltas deltas = modifiedDeltas.copy
         ..replaceRange(
           modifiedDeltas.length - 1,
           modifiedDeltas.length,
-          '\n$bulletPoint'.characters.map(
-                (e) => TextDelta(
-                  char: e,
-                  metadata: RichTextEditorController.defaultMetadata.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+          List.generate(
+            value.length,
+            (index) => TextDelta(
+              char: value[index],
+
+              /// adding this check so that the character typed after this does not inherit the bullet point's metadata
+              /// hence the restoration back to the [this] controller's [metadata]
+              metadata: (index == value.length - 1)
+                  ? metadata
+                  : RichTextEditorController.defaultMetadata.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+            ),
+          ),
         );
 
       text = deltas.text;
