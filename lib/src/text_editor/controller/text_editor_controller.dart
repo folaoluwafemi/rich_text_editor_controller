@@ -71,27 +71,15 @@ class _RichTextEditorController extends TextEditingController {
   }
 
   void _internalControllerListener() {
-    TextDeltas newDeltas = compareNewAndOldTextDeltasForChanges(
-      TextDeltasUtils.deltasFromString(text),
+    TextDeltas newDeltas = compareNewStringAndOldTextDeltasForChanges(
+      text,
       deltas.copy,
     );
 
     if (isListMode && newDeltas.length != deltas.length) {
-      print(
-        'delta coming in: ${newDeltas.fold('', (previousValue, element) {
-          return '$previousValue${element.char}';
-        })}.',
-      );
-
       newDeltas = modifyDeltasForBulletListChange(
-        TextDeltasUtils.deltasFromString(text),
+        newDeltas,
         deltas.copy,
-      );
-
-      print(
-        'delta going out: ${newDeltas.fold('', (previousValue, element) {
-          return '$previousValue${element.char}';
-        })}.',
       );
     }
 
@@ -152,11 +140,13 @@ class _RichTextEditorController extends TextEditingController {
           '\n$bulletPoint'.characters.map(
                 (e) => TextDelta(
                   char: e,
-                  metadata: RichTextEditorController.defaultMetadata
-                      .copyWith(color: Colors.black),
+                  metadata: RichTextEditorController.defaultMetadata.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
         );
+
       text = deltas.text;
       selection = TextSelection.collapsed(offset: text.length);
 
@@ -166,62 +156,104 @@ class _RichTextEditorController extends TextEditingController {
     return modifiedDeltas;
   }
 
-  TextDeltas compareNewAndOldTextDeltasForChanges(
-    TextDeltas newDeltas,
+  TextDeltas compareNewStringAndOldTextDeltasForChanges(
+    String text,
     TextDeltas oldDeltas,
   ) {
-    final TextDeltas modifiedDeltas = oldDeltas.copy;
+    final int minLength = min(text.length, oldDeltas.length);
 
-    final List<String> oldChars = oldDeltas.text.characters.toList();
-    final List<String> newChars = newDeltas.text.characters.toList();
+    final TextDeltas deltas =
+        oldDeltas.isEmpty ? [] : oldDeltas.sublist(0, minLength);
 
-    final int minLength = min(oldChars.length, newChars.length);
-    final bool? newIsMoreThanOld = newDeltas.length == oldDeltas.length
-        ? null
-        : newDeltas.length > oldDeltas.length;
+    if (minLength == oldDeltas.length) {
+      final TextMetadata metadata_ =
+          oldDeltas.elementAtOrNull(minLength - 1)?.metadata ??
+              metadata ??
+              RichTextEditorController.defaultMetadata;
 
-    for (int i = 0; i < minLength; i++) {
-      if (oldChars[i] != newChars[i]) {
-        final TextDelta deltaForMetadata = newIsMoreThanOld == null
-            ? oldDeltas[i]
-            : newIsMoreThanOld
-                ? (i <= 1 ? oldDeltas.first : oldDeltas[i - 1])
-                : (i > (oldDeltas.length - 2)
-                    ? oldDeltas.last
-                    : oldDeltas[i + 1]);
-
-        modifiedDeltas[i] = modifiedDeltas[i].copyWith(
-          char: newChars[i],
-          metadata: metadataToggled
-              ? metadata
-              : deltaForMetadata.metadata ??
-                  metadata ??
-                  RichTextEditorController.defaultMetadata,
-        );
-      }
-    }
-
-    if (oldChars.length > newChars.length) {
-      modifiedDeltas.removeRange(minLength, oldChars.length);
-    } else if (oldChars.length < newChars.length) {
-      for (int i = minLength; i < newChars.length; i++) {
-        final TextDelta? deltaForMetadata =
-            i == minLength ? oldDeltas.lastOrNull : newDeltas[i - 1];
-
-        modifiedDeltas.add(
+      for (int i = minLength; i < text.length; i++) {
+        deltas.add(
           TextDelta(
-            char: newChars[i],
-            metadata: metadataToggled
-                ? metadata
-                : deltaForMetadata?.metadata ??
-                    metadata ??
-                    RichTextEditorController.defaultMetadata,
+            char: text[i],
+            metadata: metadataToggled ? metadata : metadata_,
           ),
         );
       }
+    } else {
+      for (int i = minLength; i < oldDeltas.length; i++) {
+        deltas.removeLast();
+      }
     }
-    return modifiedDeltas;
+
+    return deltas;
   }
+
+  // TextDeltas compareNewAndOldTextDeltasForChanges(
+  //   TextDeltas newDeltas,
+  //   TextDeltas oldDeltas,
+  // ) {
+  //   final TextDeltas modifiedDeltas = oldDeltas.copy;
+  //
+  //   final List<String> oldChars = oldDeltas.text.characters.toList();
+  //   final List<String> newChars = newDeltas.text.characters.toList();
+  //
+  //   final int minLength = min(oldChars.length, newChars.length);
+  //   final bool? newIsMoreThanOld = newDeltas.length == oldDeltas.length
+  //       ? null
+  //       : newDeltas.length > oldDeltas.length;
+  //
+  //   for (int i = 0; i < minLength; i++) {
+  //     if (oldChars[i] != newChars[i]) {
+  //       final TextDelta deltaForMetadata = newIsMoreThanOld == null
+  //           ? oldDeltas[i]
+  //           : newIsMoreThanOld
+  //               ? (i <= 1 ? oldDeltas.first : oldDeltas[i - 1])
+  //               : (i > (oldDeltas.length - 2)
+  //                   ? oldDeltas.last
+  //                   : oldDeltas[i + 1]);
+  //
+  //       modifiedDeltas[i] = modifiedDeltas[i].copyWith(
+  //         char: newChars[i],
+  //         metadata: metadataToggled
+  //             ? metadata
+  //             : deltaForMetadata.metadata ??
+  //                 metadata ??
+  //                 RichTextEditorController.defaultMetadata,
+  //       );
+  //     }
+  //   }
+  //
+  //   if (oldChars.length > newChars.length) {
+  //     modifiedDeltas.removeRange(minLength, oldChars.length);
+  //   } else if (oldChars.length < newChars.length) {
+  //     for (int i = minLength; i < newChars.length; i++) {
+  //       TextDelta? deltaForMetadata =
+  //           i == minLength ? oldDeltas.lastOrNull : newDeltas[i - 1];
+  //
+  //       print(
+  //           'here: $i || ${deltaForMetadata?.char} || ${deltaForMetadata?.metadata?.style}');
+  //
+  //       modifiedDeltas.add(
+  //         TextDelta(
+  //           char: newChars[i],
+  //           metadata: metadataToggled
+  //               ? metadata
+  //               : deltaForMetadata?.metadata ??
+  //                   metadata ??
+  //                   RichTextEditorController.defaultMetadata,
+  //         ),
+  //       );
+  //     }
+  //   }
+  //
+  //   // print(
+  //   //   'delta going out: ${modifiedDeltas.fold('', (previousValue, element) {
+  //   //     return '$previousValue${element.metadata}';
+  //   //   })}.',
+  //   // );
+  //
+  //   return modifiedDeltas;
+  // }
 
   void applyDefaultMetadataChange(TextMetadata changedMetadata) {
     metadata = changedMetadata;
@@ -233,6 +265,13 @@ class _RichTextEditorController extends TextEditingController {
 
   void toggleListMode() {
     indexOflListChar = indexOflListChar == null ? (deltas.length - 1) : null;
+    // changeStyleOnSelectionChange(
+    //   changedMetadata: RichTextEditorController.defaultMetadata,
+    //   change: TextMetadataChange.all,
+    //   modifiedDeltas: deltas,
+    //   selection: selection,
+    // );
+    _metadataToggled = true;
     notifyListeners();
   }
 
@@ -326,7 +365,7 @@ class _RichTextEditorController extends TextEditingController {
     changeStyleOnSelectionChange(
       changedMetadata: changedMetadata,
       change: TextMetadataChange.fontStyle,
-      modifiedDeltas: deltas,
+      modifiedDeltas: deltas.copy,
       selection: selection,
     );
   }
@@ -345,7 +384,7 @@ class _RichTextEditorController extends TextEditingController {
     changeStyleOnSelectionChange(
       changedMetadata: changedMetadata,
       change: TextMetadataChange.fontDecoration,
-      modifiedDeltas: deltas,
+      modifiedDeltas: deltas.copy,
       selection: selection,
     );
   }
@@ -365,7 +404,7 @@ class _RichTextEditorController extends TextEditingController {
     changeStyleOnSelectionChange(
       changedMetadata: changedMetadata,
       change: TextMetadataChange.fontFeatures,
-      modifiedDeltas: deltas,
+      modifiedDeltas: deltas.copy,
       selection: selection,
     );
   }
@@ -385,7 +424,7 @@ class _RichTextEditorController extends TextEditingController {
     changeStyleOnSelectionChange(
       changedMetadata: changedMetadata,
       change: TextMetadataChange.fontFeatures,
-      modifiedDeltas: deltas,
+      modifiedDeltas: deltas.copy,
       selection: selection,
     );
   }
@@ -398,7 +437,7 @@ class _RichTextEditorController extends TextEditingController {
     changeStyleOnSelectionChange(
       changedMetadata: changedMetadata,
       change: TextMetadataChange.fontStyle,
-      modifiedDeltas: deltas,
+      modifiedDeltas: deltas.copy,
       selection: selection,
     );
   }
@@ -411,7 +450,7 @@ class _RichTextEditorController extends TextEditingController {
     changeStyleOnSelectionChange(
       changedMetadata: changedMetadata,
       change: TextMetadataChange.fontSize,
-      modifiedDeltas: deltas,
+      modifiedDeltas: deltas.copy,
       selection: selection,
     );
   }
