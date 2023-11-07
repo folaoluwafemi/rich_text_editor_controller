@@ -160,6 +160,7 @@ class _RichTextEditorController extends TextEditingController {
     String text,
     TextDeltas oldDeltas,
   ) {
+    if (text.isEmpty) return [];
     final int minLength = min(text.length, oldDeltas.length);
 
     final TextDeltas deltas =
