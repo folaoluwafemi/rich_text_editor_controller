@@ -10,6 +10,7 @@ the alignment of the text.
 ## Features
 
 - Data serialization (you can store and fetch your styled text in json format)
+- add bullet points
 - change text alignment
 - change text color
 - change text size (TBD)
@@ -29,7 +30,7 @@ add this to your ```pubspec.yaml``` file
 dependencies:
   flutter:
     sdk: flutter
-  rich_text_editor_flutter: 0.0.4
+  rich_text_editor_flutter: 0.0.5
 ```
 
 or
