@@ -71,7 +71,7 @@ class _RichTextEditorController extends TextEditingController {
   }
 
   void _internalControllerListener() {
-    TextDeltas newDeltas = compareNewStringAndOldTextDeltasForChanges(
+    TextDeltas newDeltas = _compareNewStringAndOldTextDeltasForChanges(
       text,
       deltas.copy,
     );
@@ -86,12 +86,16 @@ class _RichTextEditorController extends TextEditingController {
     setDeltas(newDeltas);
   }
 
+  /// set the new deltas and reset [metadata] relative to the new selection/caret position
   void setDeltas(TextDeltas newDeltas) {
     deltas.clear();
     deltas.addAll(newDeltas);
     if (selection.isCollapsed) resetMetadataOnSelectionCollapsed();
   }
 
+  /// If a selection changed and is inside the text and empty (collapsed),
+  /// this function sets the current [metadata] to the metadata of the
+  /// text before it's new position
   void resetMetadataOnSelectionCollapsed() {
     if (!selection.isCollapsed) return;
     if (selection.end == text.length || textBeforeSelection().isNullOrEmpty) {
@@ -133,22 +137,23 @@ class _RichTextEditorController extends TextEditingController {
     if (oldChars.length > newChars.length) return modifiedDeltas;
 
     if (newChars.last == '\n') {
-      final String value = '\n $bulletPoint ';
+      const String bulletValue = '\n $bulletPoint ';
 
       final TextDeltas deltas = modifiedDeltas.copy
         ..replaceRange(
           modifiedDeltas.length - 1,
           modifiedDeltas.length,
           List.generate(
-            value.length,
+            bulletValue.length,
             (index) => TextDelta(
-              char: value[index],
+              char: bulletValue[index],
 
               /// adding this check so that the character typed after this does not inherit the bullet point's metadata
               /// hence the restoration back to the [this] controller's [metadata]
-              metadata: (index == value.length - 1)
+              metadata: (index == bulletValue.length - 1)
                   ? metadata
-                  : RichTextEditorController.defaultMetadata.copyWith(
+                  : (metadata ?? RichTextEditorController.defaultMetadata)
+                      .copyWith(
                       fontWeight: FontWeight.bold,
                     ),
             ),
@@ -164,37 +169,60 @@ class _RichTextEditorController extends TextEditingController {
     return modifiedDeltas;
   }
 
-  TextDeltas compareNewStringAndOldTextDeltasForChanges(
+  /// this compares the old strings and the new strings by the following criteria
+  ///   *
+  TextDeltas _compareNewStringAndOldTextDeltasForChanges(
     String text,
     TextDeltas oldDeltas,
   ) {
     if (text.isEmpty) return [];
+    final TextDeltas newDeltas = oldDeltas.copy;
     final int minLength = min(text.length, oldDeltas.length);
+    final int maxLength = max(text.length, oldDeltas.length);
 
-    final TextDeltas deltas =
-        oldDeltas.isEmpty ? [] : oldDeltas.sublist(0, minLength);
+    final int indexOfChange = _compareNewAndOldForChangeIndex(
+      text: text,
+      oldDeltas: oldDeltas,
+      minLength: minLength,
+    );
+
+    if (indexOfChange == -1) return newDeltas;
+
+    final int lengthOfChange = maxLength - minLength;
 
     if (minLength == oldDeltas.length) {
-      final TextMetadata metadata_ =
-          oldDeltas.elementAtOrNull(minLength - 1)?.metadata ??
+      final TextMetadata newMetadata = metadataToggled
+          ? (metadata ??
+              oldDeltas.elementAtOrNull(indexOfChange - 1)?.metadata ??
+              RichTextEditorController.defaultMetadata)
+          : oldDeltas.elementAtOrNull(indexOfChange - 1)?.metadata ??
               metadata ??
               RichTextEditorController.defaultMetadata;
-
-      for (int i = minLength; i < text.length; i++) {
-        deltas.add(
-          TextDelta(
-            char: text[i],
-            metadata: metadataToggled ? metadata : metadata_,
-          ),
-        );
+      final int iterationLimit = lengthOfChange + indexOfChange;
+      for (int i = indexOfChange; i < iterationLimit; i++) {
+        newDeltas.insert(i, TextDelta(char: text[i], metadata: newMetadata));
       }
     } else {
-      for (int i = minLength; i < oldDeltas.length; i++) {
-        deltas.removeLast();
-      }
+      newDeltas.removeRange(indexOfChange, indexOfChange + lengthOfChange);
+    }
+    return newDeltas;
+  }
+
+  int _compareNewAndOldForChangeIndex({
+    required String text,
+    required TextDeltas oldDeltas,
+    required int minLength,
+  }) {
+    if (text.isEmpty || oldDeltas.isEmpty) return 0;
+    for (int i = 0; i < minLength; i++) {
+      final String newChar = text[i];
+      final String oldChar = oldDeltas[i].char;
+      if (newChar != oldChar) return i;
     }
 
-    return deltas;
+    if (text.length == oldDeltas.length) return -1;
+
+    return minLength;
   }
 
   void applyDefaultMetadataChange(TextMetadata changedMetadata) {

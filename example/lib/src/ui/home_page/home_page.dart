@@ -12,7 +12,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final RichTextEditorController controller = RichTextEditorController();
+  final RichTextEditorController controller = RichTextEditorController(
+    metadata: const TextMetadata(
+      fontSize: 30,
+      color: Colors.white,
+    ),
+  );
 
   @override
   void dispose() {
@@ -52,6 +57,9 @@ class _HomePageState extends State<HomePage> {
       case MetadataValue.subscript:
         controller.toggleSubscript();
         break;
+      case MetadataValue.bulletPoints:
+        controller.toggleListMode();
+        break;
     }
   }
 
@@ -88,6 +96,10 @@ class _HomePageState extends State<HomePage> {
               child: RichTextField(
                 controller: controller,
                 maxLines: 20,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white,
+                      fontSize: 30,
+                    ),
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Enter some text',

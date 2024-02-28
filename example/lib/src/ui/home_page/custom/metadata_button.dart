@@ -3,6 +3,7 @@ part of '../home_page.dart';
 enum MetadataValue {
   color,
   bold,
+  bulletPoints,
   italic,
   alignRight,
   alignCenter,

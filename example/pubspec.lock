@@ -126,11 +126,10 @@ packages:
   rich_text_editor_controller:
     dependency: "direct main"
     description:
-      name: rich_text_editor_controller
-      sha256: "2c0a3615ce4210c5224885a85a3da5edd62eeffa13befc3b3519078cb758a3c7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2"
+      path: ".."
+      relative: true
+    source: path
+    version: "0.0.4"
   sky_engine:
     dependency: transitive
     description: flutter

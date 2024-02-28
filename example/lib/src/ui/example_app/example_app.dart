@@ -8,8 +8,13 @@ class ExampleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Rich Text Editor Controller Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
+      theme: ThemeData.dark().copyWith(
+        primaryColor: Colors.deepOrange,
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.deepOrange,
+          onPrimary: Colors.white,
+          onBackground: Colors.white,
+        ),
       ),
       home: const HomePage(),
     );
