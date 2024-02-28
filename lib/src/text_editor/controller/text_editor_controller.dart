@@ -205,14 +205,6 @@ class _RichTextEditorController extends TextEditingController {
       }
     } else {
       newDeltas.removeRange(indexOfChange, indexOfChange + lengthOfChange);
-      final TextDelta delta = newDeltas[indexOfChange - 1];
-      print('delta: ${delta.metadata}');
-      print('current metadata: $metadata');
-      if (newDeltas[indexOfChange - 1].metadata != metadata) {
-        // final TextDelta delta = newDeltas[indexOfChange - 1];
-        // print('delta character: "${delta.char}"');
-        metadata = newDeltas[indexOfChange - 1].metadata;
-      }
     }
     return newDeltas;
   }
@@ -431,7 +423,7 @@ class _RichTextEditorController extends TextEditingController {
   /// Changes the [TextMetadata.alignment] to the given [alignment].
   ///
   /// note that you have to use [RichTextField] for changes made by this method to reflect.
-  /// or otherwise set the [TextField.alignment] parameter of your textfield to [TextMetadata.alignment]
+  /// or otherwise set the [TextField.alignment] parameter of your textField to [TextMetadata.alignment]
   /// while listening to changes in the controller.
   /// example:
   ///...
