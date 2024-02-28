@@ -139,25 +139,26 @@ class _RichTextEditorController extends TextEditingController {
     if (newChars.last == '\n') {
       const String bulletValue = '\n $bulletPoint ';
 
+      final TextDeltas bulletDeltas = List.generate(
+        bulletValue.length,
+        (index) => TextDelta(
+          char: bulletValue[index],
+
+          /// adding this check so that the character typed after this does not inherit the bullet point's metadata
+          /// hence the restoration back to the [this] controller's [metadata]
+          metadata: (index != bulletValue.length - 2)
+              ? metadata
+              : (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+        ),
+      );
+
       final TextDeltas deltas = modifiedDeltas.copy
         ..replaceRange(
           modifiedDeltas.length - 1,
           modifiedDeltas.length,
-          List.generate(
-            bulletValue.length,
-            (index) => TextDelta(
-              char: bulletValue[index],
-
-              /// adding this check so that the character typed after this does not inherit the bullet point's metadata
-              /// hence the restoration back to the [this] controller's [metadata]
-              metadata: (index == bulletValue.length - 1)
-                  ? metadata
-                  : (metadata ?? RichTextEditorController.defaultMetadata)
-                      .copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-            ),
-          ),
+          bulletDeltas,
         );
 
       text = deltas.text;
@@ -204,6 +205,14 @@ class _RichTextEditorController extends TextEditingController {
       }
     } else {
       newDeltas.removeRange(indexOfChange, indexOfChange + lengthOfChange);
+      final TextDelta delta = newDeltas[indexOfChange - 1];
+      print('delta: ${delta.metadata}');
+      print('current metadata: $metadata');
+      if (newDeltas[indexOfChange - 1].metadata != metadata) {
+        // final TextDelta delta = newDeltas[indexOfChange - 1];
+        // print('delta character: "${delta.char}"');
+        metadata = newDeltas[indexOfChange - 1].metadata;
+      }
     }
     return newDeltas;
   }

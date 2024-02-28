@@ -25,6 +25,7 @@ class TextDelta {
     return '''
 TextDelta(
   char: $char
+  metadata: $metadata
 )''';
   }
 

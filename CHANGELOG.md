@@ -24,3 +24,7 @@
 * add more tests
 * Added `metadata` to controller constructor
 * added `metadata` or default metadata (if `metadata` is null) to delta initialization in `RichTextEditorController` constructor
+
+## 0.0.5
+* Implement list/bullet point
+* fix bugs
