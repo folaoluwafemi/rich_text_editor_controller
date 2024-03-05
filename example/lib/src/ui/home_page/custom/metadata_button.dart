@@ -53,15 +53,18 @@ class MetadataButton extends StatelessWidget {
         selected = false;
     }
 
-    return MaterialButton(
-      color: selected ? Colors.deepOrange : null,
-      elevation: 0,
-      highlightElevation: 0,
-      onPressed: _onPressed,
-      child: Text(
-        value.name,
-        style: TextStyle(
-          color: selected ? Colors.white : null,
+    return SizedBox(
+      height: 45,
+      child: MaterialButton(
+        color: selected ? Colors.deepOrange : null,
+        elevation: 0,
+        highlightElevation: 0,
+        onPressed: _onPressed,
+        child: Text(
+          value.name,
+          style: TextStyle(
+            color: selected ? Colors.white : null,
+          ),
         ),
       ),
     );

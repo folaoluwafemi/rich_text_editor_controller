@@ -6,7 +6,7 @@ homepage: https://github.com/folaoluwafemi/rich_text_editor_controller
 repository: https://github.com/folaoluwafemi/rich_text_editor_controller
 
 environment:
-  sdk: '>=2.19.0 <4.0.0'
+  sdk: '>=3.0.2 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:

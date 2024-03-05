@@ -70,61 +70,63 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Rich Text Editor Controller Demo'),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            ValueListenableBuilder<TextEditingValue>(
-                valueListenable: controller,
-                builder: (_, __, ___) {
-                  return Wrap(
-                    children: [
-                      ...MetadataValue.values.map(
-                        (value) => Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: MetadataButton(
-                            metadata: controller.metadata ??
-                                RichTextEditorController.defaultMetadata,
-                            value: value,
-                            onPressed: onMetadataButtonPressed,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: controller,
+                  builder: (_, __, ___) {
+                    return Wrap(
+                      children: [
+                        ...MetadataValue.values.map(
+                          (value) => Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: MetadataButton(
+                              metadata: controller.metadata ??
+                                  RichTextEditorController.defaultMetadata,
+                              value: value,
+                              onPressed: onMetadataButtonPressed,
+                            ),
                           ),
                         ),
+                      ],
+                    );
+                  }),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: RichTextField(
+                  controller: controller,
+                  maxLines: 15,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white,
+                        fontSize: 25,
                       ),
-                    ],
-                  );
-                }),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: RichTextField(
-                controller: controller,
-                maxLines: 20,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white,
-                      fontSize: 30,
-                    ),
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Enter some text',
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter some text',
+                  ),
                 ),
               ),
-            ),
-            MaterialButton(
-              onPressed: () {
-                final Map<String, dynamic> data = controller.toMap();
-                if (kDebugMode) {
-                  print(data);
-                }
-                //add call to your dto/repository here to save the data
-              },
-              color: Colors.deepOrange,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-              child: const Text(
-                'Save',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
+              MaterialButton(
+                onPressed: () {
+                  final Map<String, dynamic> data = controller.toMap();
+                  if (kDebugMode) {
+                    print(data);
+                  }
+                  //add call to your dto/repository here to save the data
+                },
+                color: Colors.deepOrange,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+                child: const Text(
+                  'Save',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
