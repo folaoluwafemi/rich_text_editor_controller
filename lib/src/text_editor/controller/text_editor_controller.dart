@@ -64,8 +64,7 @@ class _RichTextEditorController extends TextEditingController {
     super.text,
     TextDeltas? deltas,
     TextMetadata? metaData,
-  })
-      : _metadata = metaData ?? RichTextEditorController.defaultMetadata,
+  })  : _metadata = metaData ?? RichTextEditorController.defaultMetadata,
         deltas = deltas ??
             (text == null ? [] : TextDeltasUtils.deltasFromString(text)) {
     addListener(_internalControllerListener);
@@ -105,19 +104,16 @@ class _RichTextEditorController extends TextEditingController {
     if (_metadataToggled) return;
 
     final TextMetadata newMetadata = (deltas.isNotEmpty
-        ? deltas[text.indexOf(selection
-        .textBefore(text)
-        .chars
-        .last)]
-        .metadata
-        : metadata) ??
+            ? deltas[text.indexOf(selection.textBefore(text).chars.last)]
+                .metadata
+            : metadata) ??
         metadata ??
         RichTextEditorController.defaultMetadata;
 
     _metadata = _metadata?.combineWith(
-      newMetadata,
-      favourOther: true,
-    ) ??
+          newMetadata,
+          favourOther: true,
+        ) ??
         newMetadata;
   }
 
@@ -132,8 +128,9 @@ class _RichTextEditorController extends TextEditingController {
   static const String bulletPoint = '•';
 
   List<TextDelta> modifyDeltasForBulletListChange(
-      List<TextDelta> modifiedDeltas,
-      List<TextDelta> oldDeltas,) {
+    List<TextDelta> modifiedDeltas,
+    List<TextDelta> oldDeltas,
+  ) {
     final List<String> oldChars = oldDeltas.text.characters.toList();
     final List<String> newChars = modifiedDeltas.text.characters.toList();
 
@@ -144,19 +141,17 @@ class _RichTextEditorController extends TextEditingController {
 
       final TextDeltas bulletDeltas = List.generate(
         bulletValue.length,
-            (index) =>
-            TextDelta(
-              char: bulletValue[index],
+        (index) => TextDelta(
+          char: bulletValue[index],
 
-              /// adding this check so that the character typed after this does not inherit the bullet point's metadata
-              /// hence the restoration back to the [this] controller's [metadata]
-              metadata: (index != bulletValue.length - 2)
-                  ? metadata
-                  : (metadata ?? RichTextEditorController.defaultMetadata)
-                  .copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          /// adding this check so that the character typed after this does not inherit the bullet point's metadata
+          /// hence the restoration back to the [this] controller's [metadata]
+          metadata: (index != bulletValue.length - 2)
+              ? metadata
+              : (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+        ),
       );
 
       final TextDeltas deltas = modifiedDeltas.copy
@@ -177,148 +172,8 @@ class _RichTextEditorController extends TextEditingController {
 
   /// this compares the old strings and the new strings by the following criteria
   ///   *
-  TextDeltas _compareNewStringAndOldTextDeltasForChanges(String text,
-      TextDeltas oldDeltas,) {
-    if (text.isEmpty) return [];
-    final TextDeltas newDeltas = oldDeltas.copy;
-    final int minLength = min(text.length, oldDeltas.length);
-    final int maxLength = max(text.length, oldDeltas.length);
-
-    var (:int? firstDifference, :int? lastDifference) =
-    _compareNewAndOldForChangeIndex(
-      text: text,
-      oldDeltas: oldDeltas,
-      minLength: minLength,
-    );
-
-    if (firstDifference == null) return newDeltas;
-    lastDifference ??= firstDifference;
-
-    print(
-      '.\n\n'
-          'text: $text\n'
-          'old deltas change: ${oldDeltas.text}\n'
-          'index of first change: $firstDifference\n'
-          'index of last change: $lastDifference\n\n',
-    );
-
-    final int lengthOfChange =
-    max(maxLength - minLength, lastDifference - firstDifference);
-
-    if (minLength == oldDeltas.length) {
-      final TextMetadata newMetadata = metadataToggled
-          ? (metadata ??
-          oldDeltas
-              .elementAtOrNull(firstDifference - 1)
-              ?.metadata ??
-          RichTextEditorController.defaultMetadata)
-          : oldDeltas
-          .elementAtOrNull(firstDifference - 1)
-          ?.metadata ??
-          metadata ??
-          RichTextEditorController.defaultMetadata;
-      final int iterationLimit =
-      max(lengthOfChange + firstDifference, lastDifference);
-      final List<int> indicesToBeReplaced = List.generate(
-        (lastDifference - firstDifference) + 1,
-            (index) => firstDifference + index,
-      );
-
-      print(
-          'indices to be replaced: $indicesToBeReplaced\nfirst difference: $firstDifference');
-
-      for (int i = firstDifference; i < iterationLimit; i++) {
-        final TextDelta delta = TextDelta(char: text[i], metadata: newMetadata);
-        print(
-          'i: $i | indices to be replaced: $indicesToBeReplaced'
-              '\ncontains: ${indicesToBeReplaced.contains(i)}',
-        );
-        indicesToBeReplaced.contains(i)
-            ? newDeltas.replaceRange(i, i, [delta])
-            : newDeltas.insert(
-          i,
-          TextDelta(char: text[i], metadata: newMetadata),
-        );
-      }
-      print('new delta text: ${newDeltas.text}');
-    } else {
-      newDeltas.removeRange(firstDifference, firstDifference + lengthOfChange);
-    }
-    return newDeltas;
-  }
-
-  ({int? firstDifference, int? lastDifference})
-  _compareNewAndOldForChangeIndex({
-    required String text,
-    required TextDeltas oldDeltas,
-    required int minLength,
-  }) {
-    final List<int> indicesOfDifference = [];
-
-    if (text.isEmpty || oldDeltas.isEmpty) {
-      return (firstDifference: 0, lastDifference: 0);
-    }
-    for (int i = 0; i < minLength; i++) {
-      final String newChar = text[i];
-      final String oldChar = oldDeltas[i].char;
-      if (newChar != oldChar) indicesOfDifference.add(i);
-    }
-
-    if (text.length == oldDeltas.length) {
-      return (firstDifference: null, lastDifference: null);
-    }
-
-    return (
-    firstDifference: indicesOfDifference.firstOrNull ?? minLength,
-    lastDifference: indicesOfDifference.lastOrNull,
-    );
-  }
-
-  ({int? firstDifference, int? lastDifference})
-  _backwardsCompareNewAndOldForChangeIndex({
-    required Characters text,
-    required TextDeltas oldDeltas,
-    required int maxLength,
-    required int minLength,
-  }) {
-    assert(oldDeltas.length < text.length);
-
-    final List<int> indicesOfDifference = [];
-
-    if (text.isEmpty || oldDeltas.isEmpty) {
-      return (firstDifference: 0, lastDifference: 0);
-    }
-
-    int? firstDifference;
-    int? lastDifference;
-
-    for (int i = 0; i < text.length; i++) {
-      final String newChar = text.elementAt(i);
-      final String? oldChar = oldDeltas
-          .elementAtOrNull(i)
-          ?.char;
-      if (newChar != oldChar) {
-        if (firstDifference != null) {
-          lastDifference = i;
-        }
-        firstDifference ??= i;
-      }
-    }
-
-    if (text.length == oldDeltas.length) {
-      return (firstDifference: null, lastDifference: null);
-    }
-    // final int firstDifference = indicesOfDifference.firstOrNull ?? minLength;
-    lastDifference = indicesOfDifference.lastOrNull ?? minLength;
-
-    return (
-    firstDifference: indicesOfDifference.firstOrNull ?? minLength,
-    lastDifference: indicesOfDifference.lastOrNull,
-    );
-  }
-
   ({int changeBase, int textChangeExtent, int oldDeltasExtentDueToChange})
-  _backwardsCompareNewAndOldForChangeIndex$2({
+      _backwardsCompareNewAndOldForChangeIndex$2({
     required String text,
     required TextDeltas oldDeltas,
     required int maxLength,
@@ -335,17 +190,13 @@ class _RichTextEditorController extends TextEditingController {
       }
     }
 
-    print('old text: ${oldDeltas.text}');
-    print('new text: $text');
-    print(' ischang base null: $changeBase');
-
     changeBase ??= minLength;
 
     final int textChangeExtent = selection.baseOffset;
 
     assert(
-    oldDeltas.length >= changeBase,
-    'the ${oldDeltas.length} must not be less than change base $changeBase',
+      oldDeltas.length >= changeBase,
+      'the ${oldDeltas.length} must not be less than change base $changeBase',
     );
 
     final int alteredRemainderLength =
@@ -354,16 +205,18 @@ class _RichTextEditorController extends TextEditingController {
     final int oldDeltasExtentDueToChange =
         changeBase + (oldDeltas.length - alteredRemainderLength);
     return (
-    changeBase: changeBase,
-    textChangeExtent: textChangeExtent,
-    oldDeltasExtentDueToChange: oldDeltasExtentDueToChange
+      changeBase: changeBase,
+      textChangeExtent: textChangeExtent,
+      oldDeltasExtentDueToChange: oldDeltasExtentDueToChange
     );
   }
 
   /// this compares the old strings and the new strings by the following criteria
   ///   *
-  TextDeltas _compareNewStringAndOldTextDeltasForChanges$2(String text,
-      TextDeltas oldDeltas,) {
+  TextDeltas _compareNewStringAndOldTextDeltasForChanges$2(
+    String text,
+    TextDeltas oldDeltas,
+  ) {
     if (text.isEmpty) return [];
     final TextDeltas newDeltas = oldDeltas.copy;
     final int minLength = min(text.length, oldDeltas.length);
@@ -372,9 +225,9 @@ class _RichTextEditorController extends TextEditingController {
     if (oldDeltas.text == text) return newDeltas;
 
     final (
-        :int changeBase,
-        :int textChangeExtent,
-        :int oldDeltasExtentDueToChange
+      :int changeBase,
+      :int textChangeExtent,
+      :int oldDeltasExtentDueToChange
     ) = _backwardsCompareNewAndOldForChangeIndex$2(
       text: text,
       oldDeltas: oldDeltas,
@@ -382,31 +235,27 @@ class _RichTextEditorController extends TextEditingController {
       minLength: minLength,
     );
 
-    print('change base: $changeBase');
-    print('text change offset: $textChangeExtent');
-
     final String change = text.substring(changeBase, textChangeExtent);
 
     final TextMetadata newMetadata = metadataToggled
         ? (metadata ??
-        oldDeltas
-            .elementAtOrNull(changeBase - 1)
-            ?.metadata ??
-        RichTextEditorController.defaultMetadata)
-        : oldDeltas
-        .elementAtOrNull(changeBase - 1)
-        ?.metadata ??
-        metadata ??
-        RichTextEditorController.defaultMetadata;
+            oldDeltas.elementAtOrNull(changeBase - 1)?.metadata ??
+            RichTextEditorController.defaultMetadata)
+        : oldDeltas.elementAtOrNull(changeBase - 1)?.metadata ??
+            metadata ??
+            RichTextEditorController.defaultMetadata;
 
     final TextDeltas changeInDeltas = change.characters
         .map<TextDelta>((e) => TextDelta(char: e, metadata: newMetadata))
         .toList();
 
-    print('new deltas length: ${newDeltas.length}');
-
     newDeltas.replaceRange(
-        changeBase, oldDeltasExtentDueToChange, changeInDeltas);
+      changeBase,
+      changeBase > oldDeltasExtentDueToChange
+          ? changeBase
+          : oldDeltasExtentDueToChange,
+      changeInDeltas,
+    );
 
     return newDeltas;
   }
@@ -433,17 +282,14 @@ class _RichTextEditorController extends TextEditingController {
   }) {
     if (!selection.isValid) return;
     changedMetadata ??=
-        deltas[text.indexOf(selection
-            .textBefore(text)
-            .chars
-            .last)].metadata ??
+        deltas[text.indexOf(selection.textBefore(text).chars.last)].metadata ??
             metadata ??
             RichTextEditorController.defaultMetadata;
 
     _metadata = _metadata?.combineWhatChanged(
-      change,
-      changedMetadata,
-    ) ??
+          change,
+          changedMetadata,
+        ) ??
         changedMetadata;
 
     metadataToggled = true;
@@ -478,9 +324,9 @@ class _RichTextEditorController extends TextEditingController {
     for (int i = start; i < end; i++) {
       modifiedDeltas[i] = modifiedDeltas[i].copyWith(
         metadata: modifiedDeltas[i].metadata?.combineWhatChanged(
-          change,
-          newMetadata,
-        ) ??
+                  change,
+                  newMetadata,
+                ) ??
             newMetadata,
       );
     }
@@ -549,7 +395,7 @@ class _RichTextEditorController extends TextEditingController {
 
     final TextMetadata changedMetadata = tempMetadata.copyWith(
       fontFeatures: tempMetadata.fontFeatures?.firstOrNull ==
-          const FontFeature.superscripts()
+              const FontFeature.superscripts()
           ? const []
           : const [FontFeature.superscripts()],
     );
@@ -569,7 +415,7 @@ class _RichTextEditorController extends TextEditingController {
 
     final TextMetadata changedMetadata = tempMetadata.copyWith(
       fontFeatures: tempMetadata.fontFeatures?.firstOrNull ==
-          const FontFeature.subscripts()
+              const FontFeature.subscripts()
           ? const []
           : const [FontFeature.subscripts()],
     );
@@ -584,7 +430,7 @@ class _RichTextEditorController extends TextEditingController {
 
   void changeColor(Color color) {
     final TextMetadata changedMetadata =
-    (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
+        (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
       color: color,
     );
     changeStyleOnSelectionChange(
@@ -597,7 +443,7 @@ class _RichTextEditorController extends TextEditingController {
 
   void changeFontSize(double fontSize) {
     final TextMetadata changedMetadata =
-    (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
+        (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
       fontSize: fontSize,
     );
     changeStyleOnSelectionChange(
