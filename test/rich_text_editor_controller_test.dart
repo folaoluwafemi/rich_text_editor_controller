@@ -363,6 +363,31 @@ void main() {
       );
 
       test(
+        'text delta utility applies metadata to reversed ranges',
+        () {
+          final redMetadata = RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.red,
+          );
+          final oldDeltas = TextDeltasUtils.deltasFromString(
+            'abc',
+            RichTextEditorController.defaultMetadata,
+          );
+
+          final newDeltas = TextDeltasUtils.applyMetadataToRange(
+            deltas: oldDeltas,
+            start: 3,
+            end: 1,
+            newMetadata: redMetadata,
+            change: TextMetadataChange.color,
+          );
+
+          expect(newDeltas[0].metadata?.color, Colors.black);
+          expect(newDeltas[1].metadata?.color, Colors.red);
+          expect(newDeltas[2].metadata?.color, Colors.red);
+        },
+      );
+
+      test(
         'text delta utility resolves metadata at or before index',
         () {
           final redMetadata = RichTextEditorController.defaultMetadata.copyWith(
@@ -391,6 +416,24 @@ void main() {
               currentMetadata: blueMetadata,
             ).color,
             Colors.blue,
+          );
+        },
+      );
+
+      test(
+        'text delta utility maps text offsets to grapheme indexes',
+        () {
+          expect(
+            TextDeltasUtils.graphemeIndexForTextOffset('a😀c', 3),
+            2,
+          );
+          expect(
+            TextDeltasUtils.graphemeIndexForTextOffset('a😀c', 999),
+            3,
+          );
+          expect(
+            TextDeltasUtils.graphemeIndexForTextOffset('a😀c', -1),
+            0,
           );
         },
       );

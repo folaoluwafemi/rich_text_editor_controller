@@ -141,7 +141,7 @@ class _RichTextEditorController extends TextEditingController {
   }
 
   int _deltaIndexForTextOffset(int offset) {
-    return text.substring(0, offset.clamp(0, text.length)).characters.length;
+    return TextDeltasUtils.graphemeIndexForTextOffset(text, offset);
   }
 
   static const String bulletPoint = '•';

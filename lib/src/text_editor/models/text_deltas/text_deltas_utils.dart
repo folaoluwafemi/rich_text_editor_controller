@@ -90,8 +90,14 @@ abstract class TextDeltasUtils {
     required TextMetadataChange change,
   }) {
     final TextDeltas modifiedDeltas = deltas.copy;
-    final int startIndex = _clampIndex(start, modifiedDeltas.length);
-    final int endIndex = _clampIndex(end, modifiedDeltas.length);
+    final int startIndex = _clampIndex(
+      start < end ? start : end,
+      modifiedDeltas.length,
+    );
+    final int endIndex = _clampIndex(
+      start < end ? end : start,
+      modifiedDeltas.length,
+    );
 
     for (int i = startIndex; i < endIndex; i++) {
       modifiedDeltas[i] = modifiedDeltas[i].copyWith(
@@ -114,6 +120,11 @@ abstract class TextDeltasUtils {
     return (index == null ? null : deltas.elementAtOrNull(index)?.metadata) ??
         currentMetadata ??
         const TextMetadata();
+  }
+
+  static int graphemeIndexForTextOffset(String text, int offset) {
+    final int clampedOffset = _clampIndex(offset, text.length);
+    return text.substring(0, clampedOffset).chars.length;
   }
 
   static TextMetadata _metadataForInsertedText(
