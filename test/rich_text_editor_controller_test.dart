@@ -210,6 +210,45 @@ void main() {
       );
 
       test(
+        'collapsed selection metadata uses last delta at end of text',
+        () {
+          final redMetadata = RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.red,
+          );
+          final blueMetadata =
+              RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.blue,
+          );
+          final controller = RichTextEditorController(
+            deltas: [
+              TextDelta(char: 'a', metadata: redMetadata),
+              TextDelta(char: 'b', metadata: blueMetadata),
+            ],
+          );
+
+          controller.selection = const TextSelection.collapsed(offset: 2);
+          controller.setDeltas(controller.deltas.copy);
+
+          expect(controller.metadata?.color, Colors.blue);
+        },
+      );
+
+      test(
+        'collapsed selection metadata ignores empty text',
+        () {
+          final redMetadata = RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.red,
+          );
+          final controller = RichTextEditorController(metadata: redMetadata);
+
+          controller.selection = const TextSelection.collapsed(offset: 0);
+          controller.setDeltas(const []);
+
+          expect(controller.metadata?.color, Colors.red);
+        },
+      );
+
+      test(
         'text edits can replace graphemes without changing text length',
         () {
           final controller = RichTextEditorController(text: 'cat');

@@ -101,9 +101,7 @@ class _RichTextEditorController extends TextEditingController {
   /// text before it's new position
   void resetMetadataOnSelectionCollapsed() {
     if (!selection.isCollapsed) return;
-    if (selection.end == text.length || textBeforeSelection().isNullOrEmpty) {
-      return;
-    }
+    if (textBeforeSelection().isNullOrEmpty) return;
     if (_metadataToggled) return;
 
     final int? indexBeforeSelection = _deltaIndexBeforeSelection(selection);
@@ -137,7 +135,9 @@ class _RichTextEditorController extends TextEditingController {
     }
 
     if (textBeforeSelection.isEmpty) return null;
-    return textBeforeSelection.characters.length - 1;
+    final int index = textBeforeSelection.characters.length - 1;
+    if (index < 0 || index >= deltas.length) return null;
+    return index;
   }
 
   int _deltaIndexForTextOffset(int offset) {
