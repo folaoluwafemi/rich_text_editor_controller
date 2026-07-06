@@ -47,11 +47,9 @@ TextDelta(
     );
   }
 
+  @Deprecated('Use copyWith(char: char) instead.')
   TextDelta copyWithChar(String char) {
-    return TextDelta(
-      char: char,
-      metadata: metadata,
-    );
+    return copyWith(char: char);
   }
 
   @override

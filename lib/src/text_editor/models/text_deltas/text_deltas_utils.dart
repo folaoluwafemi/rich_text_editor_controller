@@ -1,6 +1,8 @@
 part of 'text_deltas.dart';
 
 abstract class TextDeltasUtils {
+  static const String bulletPoint = '•';
+
   static TextDeltas deltasFromString(
     String string, [
     TextMetadata? metadata,
@@ -20,5 +22,176 @@ abstract class TextDeltasUtils {
       deltas.add(TextDelta.fromMap((map as Map).cast<String, dynamic>()));
     }
     return deltas;
+  }
+
+  static TextDeltas applyTextEdit({
+    required String newText,
+    required TextDeltas oldDeltas,
+    required TextMetadata? currentMetadata,
+    required bool metadataToggled,
+  }) {
+    if (newText.isEmpty) return [];
+
+    final List<String> newChars = newText.chars;
+    final List<String> oldChars =
+        oldDeltas.map((TextDelta delta) => delta.char).toList();
+    final TextDeltas newDeltas = oldDeltas.copy;
+
+    int commonPrefixLength = 0;
+    while (commonPrefixLength < newChars.length &&
+        commonPrefixLength < oldChars.length &&
+        newChars[commonPrefixLength] == oldChars[commonPrefixLength]) {
+      commonPrefixLength++;
+    }
+
+    if (commonPrefixLength == newChars.length &&
+        commonPrefixLength == oldChars.length) {
+      return newDeltas;
+    }
+
+    int oldSuffixStart = oldChars.length;
+    int newSuffixStart = newChars.length;
+    while (oldSuffixStart > commonPrefixLength &&
+        newSuffixStart > commonPrefixLength &&
+        oldChars[oldSuffixStart - 1] == newChars[newSuffixStart - 1]) {
+      oldSuffixStart--;
+      newSuffixStart--;
+    }
+
+    final List<String> insertedChars = newChars.sublist(
+      commonPrefixLength,
+      newSuffixStart,
+    );
+    final TextMetadata insertedMetadata = _metadataForInsertedText(
+      commonPrefixLength,
+      oldDeltas: oldDeltas,
+      currentMetadata: currentMetadata,
+      metadataToggled: metadataToggled,
+      replacesExistingText: oldSuffixStart > commonPrefixLength,
+    );
+
+    newDeltas.replaceRange(
+      commonPrefixLength,
+      oldSuffixStart,
+      insertedChars.map(
+        (String char) => TextDelta(
+          char: char,
+          metadata: insertedMetadata,
+        ),
+      ),
+    );
+
+    return newDeltas;
+  }
+
+  static TextDeltas applyMetadataToRange({
+    required TextDeltas deltas,
+    required int start,
+    required int end,
+    required TextMetadata newMetadata,
+    required TextMetadataChange change,
+  }) {
+    final TextDeltas modifiedDeltas = deltas.copy;
+    final int startIndex = _clampIndex(
+      start < end ? start : end,
+      modifiedDeltas.length,
+    );
+    final int endIndex = _clampIndex(
+      start < end ? end : start,
+      modifiedDeltas.length,
+    );
+
+    for (int i = startIndex; i < endIndex; i++) {
+      modifiedDeltas[i] = modifiedDeltas[i].copyWith(
+        metadata: modifiedDeltas[i].metadata?.combineWhatChanged(
+                  change,
+                  newMetadata,
+                ) ??
+            newMetadata,
+      );
+    }
+
+    return modifiedDeltas;
+  }
+
+  static TextDeltas applyBulletListChange({
+    required TextDeltas modifiedDeltas,
+    required TextDeltas oldDeltas,
+    required TextMetadata? currentMetadata,
+  }) {
+    final List<String> oldChars = oldDeltas.text.chars;
+    final List<String> newChars = modifiedDeltas.text.chars;
+
+    if (newChars.isEmpty || oldChars.length > newChars.length) {
+      return modifiedDeltas;
+    }
+
+    if (newChars.last != '\n') return modifiedDeltas;
+
+    const String bulletValue = '\n $bulletPoint ';
+    final TextMetadata fallbackMetadata =
+        currentMetadata ?? const TextMetadata();
+    final TextDeltas bulletDeltas = List.generate(
+      bulletValue.length,
+      (int index) => TextDelta(
+        char: bulletValue[index],
+        metadata: index != bulletValue.length - 2
+            ? currentMetadata
+            : fallbackMetadata.copyWith(fontWeight: FontWeight.bold),
+      ),
+    );
+
+    return modifiedDeltas.copy
+      ..replaceRange(
+        modifiedDeltas.length - 1,
+        modifiedDeltas.length,
+        bulletDeltas,
+      );
+  }
+
+  static TextMetadata metadataAtOrBeforeIndex({
+    required TextDeltas deltas,
+    required int? index,
+    required TextMetadata? currentMetadata,
+  }) {
+    return (index == null ? null : deltas.elementAtOrNull(index)?.metadata) ??
+        currentMetadata ??
+        const TextMetadata();
+  }
+
+  static int graphemeIndexForTextOffset(String text, int offset) {
+    final int clampedOffset = _clampIndex(offset, text.length);
+    return text.substring(0, clampedOffset).chars.length;
+  }
+
+  static TextMetadata _metadataForInsertedText(
+    int index, {
+    required TextDeltas oldDeltas,
+    required TextMetadata? currentMetadata,
+    required bool metadataToggled,
+    required bool replacesExistingText,
+  }) {
+    if (metadataToggled) {
+      return currentMetadata ??
+          oldDeltas.elementAtOrNull(index - 1)?.metadata ??
+          const TextMetadata();
+    }
+
+    if (replacesExistingText) {
+      return oldDeltas.elementAtOrNull(index)?.metadata ??
+          oldDeltas.elementAtOrNull(index - 1)?.metadata ??
+          currentMetadata ??
+          const TextMetadata();
+    }
+
+    return oldDeltas.elementAtOrNull(index - 1)?.metadata ??
+        currentMetadata ??
+        const TextMetadata();
+  }
+
+  static int _clampIndex(int index, int length) {
+    if (index < 0) return 0;
+    if (index > length) return length;
+    return index;
   }
 }
