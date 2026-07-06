@@ -363,6 +363,39 @@ void main() {
       );
 
       test(
+        'text delta utility resolves metadata at or before index',
+        () {
+          final redMetadata = RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.red,
+          );
+          final blueMetadata =
+              RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.blue,
+          );
+          final deltas = [
+            TextDelta(char: 'a', metadata: redMetadata),
+          ];
+
+          expect(
+            TextDeltasUtils.metadataAtOrBeforeIndex(
+              deltas: deltas,
+              index: 0,
+              currentMetadata: blueMetadata,
+            ).color,
+            Colors.red,
+          );
+          expect(
+            TextDeltasUtils.metadataAtOrBeforeIndex(
+              deltas: deltas,
+              index: 99,
+              currentMetadata: blueMetadata,
+            ).color,
+            Colors.blue,
+          );
+        },
+      );
+
+      test(
         'text span builder coalesces adjacent matching metadata',
         () {
           final redMetadata = RichTextEditorController.defaultMetadata.copyWith(

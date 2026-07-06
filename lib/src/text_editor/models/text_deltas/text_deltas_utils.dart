@@ -106,6 +106,16 @@ abstract class TextDeltasUtils {
     return modifiedDeltas;
   }
 
+  static TextMetadata metadataAtOrBeforeIndex({
+    required TextDeltas deltas,
+    required int? index,
+    required TextMetadata? currentMetadata,
+  }) {
+    return (index == null ? null : deltas.elementAtOrNull(index)?.metadata) ??
+        currentMetadata ??
+        const TextMetadata();
+  }
+
   static TextMetadata _metadataForInsertedText(
     int index, {
     required TextDeltas oldDeltas,

@@ -105,11 +105,11 @@ class _RichTextEditorController extends TextEditingController {
     if (_metadataToggled) return;
 
     final int? indexBeforeSelection = _deltaIndexBeforeSelection(selection);
-    final TextMetadata newMetadata = (indexBeforeSelection == null
-            ? metadata
-            : deltas.elementAtOrNull(indexBeforeSelection)?.metadata) ??
-        metadata ??
-        RichTextEditorController.defaultMetadata;
+    final TextMetadata newMetadata = TextDeltasUtils.metadataAtOrBeforeIndex(
+      deltas: deltas,
+      index: indexBeforeSelection,
+      currentMetadata: metadata,
+    );
 
     _metadata = _metadata?.combineWith(
           newMetadata,
@@ -211,11 +211,11 @@ class _RichTextEditorController extends TextEditingController {
   }) {
     if (!selection.isValid) return;
     final int? indexBeforeSelection = _deltaIndexBeforeSelection(selection);
-    changedMetadata ??= (indexBeforeSelection == null
-            ? metadata
-            : deltas.elementAtOrNull(indexBeforeSelection)?.metadata) ??
-        metadata ??
-        RichTextEditorController.defaultMetadata;
+    changedMetadata ??= TextDeltasUtils.metadataAtOrBeforeIndex(
+      deltas: deltas,
+      index: indexBeforeSelection,
+      currentMetadata: metadata,
+    );
 
     _metadata = _metadata?.combineWhatChanged(
           change,
