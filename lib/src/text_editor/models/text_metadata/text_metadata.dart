@@ -110,15 +110,9 @@ class TextMetadata {
     final TextMetadata metadata2, {
     bool favourFirst = true,
   }) {
-    return TextMetadata(
-      color: favourFirst ? metadata1.color : metadata2.color,
-      fontWeight: favourFirst ? metadata1.fontWeight : metadata2.fontWeight,
-      fontStyle: favourFirst ? metadata1.fontStyle : metadata2.fontStyle,
-      fontSize: favourFirst ? metadata1.fontSize : metadata2.fontSize,
-      decoration: favourFirst ? metadata1.decoration : metadata2.decoration,
-      fontFeatures:
-          favourFirst ? metadata1._fontFeatures : metadata2._fontFeatures,
-      alignment: favourFirst ? metadata1.alignment : metadata2.alignment,
+    return metadata1.combineWith(
+      metadata2,
+      favourOther: !favourFirst,
     );
   }
 

@@ -505,6 +505,37 @@ void main() {
       );
 
       test(
+        'metadata combineWhereNotEqual delegates to combineWith semantics',
+        () {
+          final redMetadata = RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.red,
+            fontFeatures: const [FontFeature.superscripts()],
+          );
+          final blueMetadata =
+              RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.blue,
+            fontFeatures: const [FontFeature.subscripts()],
+          );
+
+          expect(
+            TextMetadata.combineWhereNotEqual(
+              redMetadata,
+              blueMetadata,
+            ),
+            redMetadata,
+          );
+          expect(
+            TextMetadata.combineWhereNotEqual(
+              redMetadata,
+              blueMetadata,
+              favourFirst: false,
+            ),
+            blueMetadata,
+          );
+        },
+      );
+
+      test(
         'metadata serialization uses stable names and reads legacy indexes',
         () {
           final metadata = RichTextEditorController.defaultMetadata.copyWith(
