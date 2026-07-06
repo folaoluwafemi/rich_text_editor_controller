@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rich_text_editor_controller/rich_text_editor_controller.dart';
 import 'package:rich_text_editor_controller/src/text_editor/models/text_deltas/text_deltas.dart'
     show TextDeltasUtils;
+import 'package:rich_text_editor_controller/src/text_editor/models/text_metadata/text_metadata_enum.dart'
+    show TextMetadataChange;
 import 'package:rich_text_editor_controller/src/text_editor/ui/text_span_builder.dart'
     show RichTextSpanBuilder;
 
@@ -293,6 +295,31 @@ void main() {
           expect(newDeltas.text, 'aXYc');
           expect(newDeltas[1].metadata?.color, Colors.blue);
           expect(newDeltas[2].metadata?.color, Colors.blue);
+        },
+      );
+
+      test(
+        'text delta utility applies metadata to clamped ranges',
+        () {
+          final redMetadata = RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.red,
+          );
+          final oldDeltas = TextDeltasUtils.deltasFromString(
+            'abc',
+            RichTextEditorController.defaultMetadata,
+          );
+
+          final newDeltas = TextDeltasUtils.applyMetadataToRange(
+            deltas: oldDeltas,
+            start: 1,
+            end: 99,
+            newMetadata: redMetadata,
+            change: TextMetadataChange.color,
+          );
+
+          expect(newDeltas[0].metadata?.color, Colors.black);
+          expect(newDeltas[1].metadata?.color, Colors.red);
+          expect(newDeltas[2].metadata?.color, Colors.red);
         },
       );
 

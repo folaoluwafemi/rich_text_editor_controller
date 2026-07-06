@@ -82,6 +82,30 @@ abstract class TextDeltasUtils {
     return newDeltas;
   }
 
+  static TextDeltas applyMetadataToRange({
+    required TextDeltas deltas,
+    required int start,
+    required int end,
+    required TextMetadata newMetadata,
+    required TextMetadataChange change,
+  }) {
+    final TextDeltas modifiedDeltas = deltas.copy;
+    final int startIndex = _clampIndex(start, modifiedDeltas.length);
+    final int endIndex = _clampIndex(end, modifiedDeltas.length);
+
+    for (int i = startIndex; i < endIndex; i++) {
+      modifiedDeltas[i] = modifiedDeltas[i].copyWith(
+        metadata: modifiedDeltas[i].metadata?.combineWhatChanged(
+                  change,
+                  newMetadata,
+                ) ??
+            newMetadata,
+      );
+    }
+
+    return modifiedDeltas;
+  }
+
   static TextMetadata _metadataForInsertedText(
     int index, {
     required TextDeltas oldDeltas,
@@ -105,5 +129,11 @@ abstract class TextDeltasUtils {
     return oldDeltas.elementAtOrNull(index - 1)?.metadata ??
         currentMetadata ??
         const TextMetadata();
+  }
+
+  static int _clampIndex(int index, int length) {
+    if (index < 0) return 0;
+    if (index > length) return length;
+    return index;
   }
 }

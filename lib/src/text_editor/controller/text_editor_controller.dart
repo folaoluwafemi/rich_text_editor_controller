@@ -262,23 +262,14 @@ class _RichTextEditorController extends TextEditingController {
     required TextDeltas deltas,
     required TextMetadataChange change,
     required TextSelection selection,
-  }) {
-    final TextDeltas modifiedDeltas = deltas.copy;
-
-    final int start = _deltaIndexForTextOffset(selection.start);
-    final int end = _deltaIndexForTextOffset(selection.end);
-
-    for (int i = start; i < end; i++) {
-      modifiedDeltas[i] = modifiedDeltas[i].copyWith(
-        metadata: modifiedDeltas[i].metadata?.combineWhatChanged(
-                  change,
-                  newMetadata,
-                ) ??
-            newMetadata,
+  }) =>
+      TextDeltasUtils.applyMetadataToRange(
+        deltas: deltas,
+        start: _deltaIndexForTextOffset(selection.start),
+        end: _deltaIndexForTextOffset(selection.end),
+        newMetadata: newMetadata,
+        change: change,
       );
-    }
-    return modifiedDeltas;
-  }
 
   /// Toggles the [TextMetadata.fontWeight] between [FontWeight.normal] and [FontWeight.w700].
   void toggleBold() {
