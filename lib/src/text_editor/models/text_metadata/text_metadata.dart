@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rich_text_editor_controller/src/text_editor/models/text_metadata/text_metadata_enum.dart';
 import 'package:rich_text_editor_controller/src/utils/utils_barrel.dart';
@@ -12,8 +11,14 @@ class TextMetadata {
   final FontStyle fontStyle;
   final double fontSize;
   final TextDecorationEnum decoration;
-  final List<FontFeature>? fontFeatures;
+  final List<FontFeature>? _fontFeatures;
   final TextAlign alignment;
+
+  List<FontFeature>? get fontFeatures {
+    final List<FontFeature>? fontFeatures = _fontFeatures;
+    if (fontFeatures == null) return null;
+    return List<FontFeature>.unmodifiable(fontFeatures);
+  }
 
   const TextMetadata({
     this.color = Colors.black,
@@ -22,8 +27,8 @@ class TextMetadata {
     this.fontSize = 14,
     this.alignment = TextAlign.start,
     this.decoration = TextDecorationEnum.none,
-    this.fontFeatures,
-  });
+    List<FontFeature>? fontFeatures,
+  }) : _fontFeatures = fontFeatures;
 
   TextMetadata.fromTextStyle(
     TextStyle style, {
@@ -35,7 +40,7 @@ class TextMetadata {
         decoration = style.decoration == null
             ? TextDecorationEnum.none
             : TextDecorationEnum.fromDecoration(style.decoration!),
-        fontFeatures = style.fontFeatures;
+        _fontFeatures = style.fontFeatures;
 
   TextMetadata copyWith({
     Color? color,
@@ -52,7 +57,7 @@ class TextMetadata {
       fontStyle: fontStyle ?? this.fontStyle,
       fontSize: fontSize ?? this.fontSize,
       decoration: decoration ?? this.decoration,
-      fontFeatures: fontFeatures ?? this.fontFeatures,
+      fontFeatures: fontFeatures ?? _fontFeatures,
       alignment: alignment ?? this.alignment,
     );
   }
@@ -112,7 +117,7 @@ class TextMetadata {
       fontSize: favourFirst ? metadata1.fontSize : metadata2.fontSize,
       decoration: favourFirst ? metadata1.decoration : metadata2.decoration,
       fontFeatures:
-          favourFirst ? metadata1.fontFeatures : metadata2.fontFeatures,
+          favourFirst ? metadata1._fontFeatures : metadata2._fontFeatures,
       alignment: favourFirst ? metadata1.alignment : metadata2.alignment,
     );
   }
@@ -147,11 +152,11 @@ class TextMetadata {
           : favourOther
               ? other.decoration
               : decoration,
-      fontFeatures: fontFeatures == other.fontFeatures
-          ? fontFeatures
+      fontFeatures: listEquals(_fontFeatures, other._fontFeatures)
+          ? _fontFeatures
           : favourOther
-              ? other.fontFeatures ?? fontFeatures
-              : fontFeatures ?? other.fontFeatures,
+              ? other._fontFeatures ?? _fontFeatures
+              : _fontFeatures ?? other._fontFeatures,
       alignment: alignment == other.alignment
           ? alignment
           : favourOther
@@ -163,27 +168,39 @@ class TextMetadata {
   factory TextMetadata.fromMap(Map<String, dynamic> map) {
     return TextMetadata(
       color: UtilFunctions.colorFromMap(map),
-      fontWeight: FontWeight.values[(map['fontWeight'])],
-      fontStyle: FontStyle.values[(map['fontStyle'])],
+      fontWeight: _fontWeightFromMap(map['fontWeight']),
+      fontStyle: _enumValueFromMap(
+        FontStyle.values,
+        map['fontStyle'],
+        'fontStyle',
+      ),
       fontSize: (map['fontSize'] as num).toDouble(),
       fontFeatures: (map['fontFeatures'] as List?)
           ?.cast<Map<String, dynamic>>()
           .map((e) => _fontFeatureFromMap(e))
           .toList(),
-      alignment: TextAlign.values[(map['alignment'])],
-      decoration: TextDecorationEnum.values[(map['decoration'])],
+      alignment: _enumValueFromMap(
+        TextAlign.values,
+        map['alignment'],
+        'alignment',
+      ),
+      decoration: _enumValueFromMap(
+        TextDecorationEnum.values,
+        map['decoration'],
+        'decoration',
+      ),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'color': color.toSerializerString,
-      'fontWeight': fontWeight.index,
-      'fontStyle': fontStyle.index,
+      'fontWeight': 'w${fontWeight.value}',
+      'fontStyle': fontStyle.name,
       'fontSize': fontSize,
       'fontFeatures': fontFeatures?.map((e) => _fontFeatureToMap(e)).toList(),
-      'alignment': alignment.index,
-      'decoration': decoration.index,
+      'alignment': alignment.name,
+      'decoration': decoration.name,
     };
   }
 
@@ -197,18 +214,19 @@ class TextMetadata {
           fontStyle == other.fontStyle &&
           fontSize == other.fontSize &&
           decoration == other.decoration &&
-          fontFeatures == other.fontFeatures &&
+          listEquals(_fontFeatures, other._fontFeatures) &&
           alignment == other.alignment;
 
   @override
-  int get hashCode =>
-      color.hashCode ^
-      fontWeight.hashCode ^
-      fontStyle.hashCode ^
-      fontSize.hashCode ^
-      decoration.hashCode ^
-      fontFeatures.hashCode ^
-      alignment.hashCode;
+  int get hashCode => Object.hash(
+        color,
+        fontWeight,
+        fontStyle,
+        fontSize,
+        decoration,
+        _fontFeatures == null ? null : Object.hashAll(_fontFeatures!),
+        alignment,
+      );
 
   @override
   String toString() {
@@ -223,6 +241,38 @@ TextMetadata{
       alignment: $alignment
     }''';
   }
+}
+
+T _enumValueFromMap<T extends Enum>(
+  List<T> values,
+  Object? value,
+  String field,
+) {
+  if (value is String) {
+    for (final T enumValue in values) {
+      if (enumValue.name == value) return enumValue;
+    }
+  }
+
+  if (value is int && value >= 0 && value < values.length) {
+    return values[value];
+  }
+
+  throw FormatException('Invalid $field value: $value');
+}
+
+FontWeight _fontWeightFromMap(Object? value) {
+  if (value is String) {
+    for (final FontWeight fontWeight in FontWeight.values) {
+      if ('w${fontWeight.value}' == value) return fontWeight;
+    }
+  }
+
+  if (value is int && value >= 0 && value < FontWeight.values.length) {
+    return FontWeight.values[value];
+  }
+
+  throw FormatException('Invalid fontWeight value: $value');
 }
 
 FontFeature _fontFeatureFromMap(Map map) {

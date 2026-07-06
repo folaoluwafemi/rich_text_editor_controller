@@ -104,10 +104,10 @@ class _RichTextEditorController extends TextEditingController {
     }
     if (_metadataToggled) return;
 
-    final TextMetadata newMetadata = (deltas.isNotEmpty
-            ? deltas[text.indexOf(selection.textBefore(text).chars.last)]
-                .metadata
-            : metadata) ??
+    final int? indexBeforeSelection = _deltaIndexBeforeSelection(selection);
+    final TextMetadata newMetadata = (indexBeforeSelection == null
+            ? metadata
+            : deltas.elementAtOrNull(indexBeforeSelection)?.metadata) ??
         metadata ??
         RichTextEditorController.defaultMetadata;
 
@@ -124,6 +124,22 @@ class _RichTextEditorController extends TextEditingController {
     } catch (e) {
       return null;
     }
+  }
+
+  int? _deltaIndexBeforeSelection(TextSelection selection) {
+    final String textBeforeSelection;
+    try {
+      textBeforeSelection = selection.textBefore(text);
+    } catch (e) {
+      return null;
+    }
+
+    if (textBeforeSelection.isEmpty) return null;
+    return textBeforeSelection.characters.length - 1;
+  }
+
+  int _deltaIndexForTextOffset(int offset) {
+    return text.substring(0, offset.clamp(0, text.length)).characters.length;
   }
 
   static const String bulletPoint = '•';
@@ -203,7 +219,10 @@ class _RichTextEditorController extends TextEditingController {
               RichTextEditorController.defaultMetadata;
       final int iterationLimit = lengthOfChange + indexOfChange;
       for (int i = indexOfChange; i < iterationLimit; i++) {
-        newDeltas.insert(i, TextDelta(char: newChars[i], metadata: newMetadata));
+        newDeltas.insert(
+          i,
+          TextDelta(char: newChars[i], metadata: newMetadata),
+        );
       }
     } else {
       newDeltas.removeRange(indexOfChange, indexOfChange + lengthOfChange);
@@ -249,10 +268,12 @@ class _RichTextEditorController extends TextEditingController {
     required TextSelection selection,
   }) {
     if (!selection.isValid) return;
-    changedMetadata ??=
-        deltas[text.indexOf(selection.textBefore(text).chars.last)].metadata ??
-            metadata ??
-            RichTextEditorController.defaultMetadata;
+    final int? indexBeforeSelection = _deltaIndexBeforeSelection(selection);
+    changedMetadata ??= (indexBeforeSelection == null
+            ? metadata
+            : deltas.elementAtOrNull(indexBeforeSelection)?.metadata) ??
+        metadata ??
+        RichTextEditorController.defaultMetadata;
 
     _metadata = _metadata?.combineWhatChanged(
           change,
@@ -286,8 +307,8 @@ class _RichTextEditorController extends TextEditingController {
   }) {
     final TextDeltas modifiedDeltas = deltas.copy;
 
-    final int start = selection.start;
-    final int end = selection.end;
+    final int start = _deltaIndexForTextOffset(selection.start);
+    final int end = _deltaIndexForTextOffset(selection.end);
 
     for (int i = start; i < end; i++) {
       modifiedDeltas[i] = modifiedDeltas[i].copyWith(
@@ -331,7 +352,7 @@ class _RichTextEditorController extends TextEditingController {
     );
     changeStyleOnSelectionChange(
       changedMetadata: changedMetadata,
-      change: TextMetadataChange.color,
+      change: TextMetadataChange.fontStyle,
       modifiedDeltas: deltas.copy,
       selection: selection,
     );
@@ -403,7 +424,7 @@ class _RichTextEditorController extends TextEditingController {
     );
     changeStyleOnSelectionChange(
       changedMetadata: changedMetadata,
-      change: TextMetadataChange.fontStyle,
+      change: TextMetadataChange.color,
       modifiedDeltas: deltas.copy,
       selection: selection,
     );
@@ -429,7 +450,7 @@ class _RichTextEditorController extends TextEditingController {
   /// while listening to changes in the controller.
   /// example:
   ///...
-  ///     ValueListenableBuilder<TextEditingValue>(
+  ///     `ValueListenableBuilder<TextEditingValue>`
   ///         valueListenable: controller,
   ///         builder: (_, controllerValue, __) => TextField(
   ///           controller: controller,
@@ -451,16 +472,29 @@ class _RichTextEditorController extends TextEditingController {
     required bool withComposing,
   }) {
     final List<TextSpan> spanChildren = [];
+    final StringBuffer currentText = StringBuffer();
+    TextMetadata? currentMetadata;
 
-    for (final TextDelta delta in deltas) {
+    void addCurrentSpan() {
+      if (currentText.isEmpty) return;
       spanChildren.add(
         TextSpan(
-          text: delta.char,
-          style: delta.metadata?.style ??
+          text: currentText.toString(),
+          style: currentMetadata?.style ??
               RichTextEditorController.defaultMetadata.style,
         ),
       );
+      currentText.clear();
     }
+
+    for (final TextDelta delta in deltas) {
+      if (currentText.isNotEmpty && delta.metadata != currentMetadata) {
+        addCurrentSpan();
+      }
+      currentMetadata = delta.metadata;
+      currentText.write(delta.char);
+    }
+    addCurrentSpan();
 
     final TextSpan textSpan = TextSpan(
       style: metadata?.styleWithoutFontFeatures ?? style,
