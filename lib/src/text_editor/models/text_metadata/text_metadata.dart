@@ -165,7 +165,7 @@ class TextMetadata {
       color: UtilFunctions.colorFromMap(map),
       fontWeight: FontWeight.values[(map['fontWeight'])],
       fontStyle: FontStyle.values[(map['fontStyle'])],
-      fontSize: map['fontSize'] as double,
+      fontSize: (map['fontSize'] as num).toDouble(),
       fontFeatures: (map['fontFeatures'] as List?)
           ?.cast<Map<String, dynamic>>()
           .map((e) => _fontFeatureFromMap(e))

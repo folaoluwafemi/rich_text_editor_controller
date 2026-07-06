@@ -24,6 +24,7 @@ extension ListExtension<E> on List<E> {
       return null;
     }
   }
+
   void addItemBetweenList(
     int index, {
     required E item,

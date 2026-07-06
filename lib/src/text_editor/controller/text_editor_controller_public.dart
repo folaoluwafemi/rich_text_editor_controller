@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:characters/characters.dart';
 import 'package:flutter/material.dart';
 import 'package:rich_text_editor_controller/src/text_editor/models/text_editor_models_barrel.dart';
 import 'package:rich_text_editor_controller/src/utils/utils_barrel.dart';
@@ -42,9 +43,7 @@ class RichTextEditorController extends _RichTextEditorController {
         super(
           text: text ?? deltas?.text,
           metaData: metadata,
-        ) {
-    addListener(_internalControllerListener);
-  }
+        );
 
   @override
   RichTextEditorController copy() {

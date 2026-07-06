@@ -5,5 +5,5 @@ extension StringExtension on String {
     return replaceAll(pattern, '');
   }
 
-  List<String> get chars => split('');
+  List<String> get chars => characters.toList();
 }

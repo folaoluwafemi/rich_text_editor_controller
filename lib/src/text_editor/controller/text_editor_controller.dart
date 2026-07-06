@@ -71,6 +71,7 @@ class _RichTextEditorController extends TextEditingController {
   }
 
   void _internalControllerListener() {
+    if (text == deltas.text) return;
     TextDeltas newDeltas = _compareNewStringAndOldTextDeltasForChanges(
       text,
       deltas.copy,
@@ -177,12 +178,13 @@ class _RichTextEditorController extends TextEditingController {
     TextDeltas oldDeltas,
   ) {
     if (text.isEmpty) return [];
+    final List<String> newChars = text.characters.toList();
     final TextDeltas newDeltas = oldDeltas.copy;
-    final int minLength = min(text.length, oldDeltas.length);
-    final int maxLength = max(text.length, oldDeltas.length);
+    final int minLength = min(newChars.length, oldDeltas.length);
+    final int maxLength = max(newChars.length, oldDeltas.length);
 
     final int indexOfChange = _compareNewAndOldForChangeIndex(
-      text: text,
+      newChars: newChars,
       oldDeltas: oldDeltas,
       minLength: minLength,
     );
@@ -201,7 +203,7 @@ class _RichTextEditorController extends TextEditingController {
               RichTextEditorController.defaultMetadata;
       final int iterationLimit = lengthOfChange + indexOfChange;
       for (int i = indexOfChange; i < iterationLimit; i++) {
-        newDeltas.insert(i, TextDelta(char: text[i], metadata: newMetadata));
+        newDeltas.insert(i, TextDelta(char: newChars[i], metadata: newMetadata));
       }
     } else {
       newDeltas.removeRange(indexOfChange, indexOfChange + lengthOfChange);
@@ -210,18 +212,18 @@ class _RichTextEditorController extends TextEditingController {
   }
 
   int _compareNewAndOldForChangeIndex({
-    required String text,
+    required List<String> newChars,
     required TextDeltas oldDeltas,
     required int minLength,
   }) {
-    if (text.isEmpty || oldDeltas.isEmpty) return 0;
+    if (newChars.isEmpty || oldDeltas.isEmpty) return 0;
     for (int i = 0; i < minLength; i++) {
-      final String newChar = text[i];
+      final String newChar = newChars[i];
       final String oldChar = oldDeltas[i].char;
       if (newChar != oldChar) return i;
     }
 
-    if (text.length == oldDeltas.length) return -1;
+    if (newChars.length == oldDeltas.length) return -1;
 
     return minLength;
   }
@@ -329,7 +331,7 @@ class _RichTextEditorController extends TextEditingController {
     );
     changeStyleOnSelectionChange(
       changedMetadata: changedMetadata,
-      change: TextMetadataChange.fontStyle,
+      change: TextMetadataChange.color,
       modifiedDeltas: deltas.copy,
       selection: selection,
     );
