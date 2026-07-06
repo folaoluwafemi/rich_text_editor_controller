@@ -187,64 +187,82 @@ class _RichTextEditorController extends TextEditingController {
     return modifiedDeltas;
   }
 
-  /// this compares the old strings and the new strings by the following criteria
-  ///   *
   TextDeltas _compareNewStringAndOldTextDeltasForChanges(
     String text,
     TextDeltas oldDeltas,
   ) {
     if (text.isEmpty) return [];
     final List<String> newChars = text.characters.toList();
+    final List<String> oldChars =
+        oldDeltas.map((TextDelta delta) => delta.char).toList();
     final TextDeltas newDeltas = oldDeltas.copy;
-    final int minLength = min(newChars.length, oldDeltas.length);
-    final int maxLength = max(newChars.length, oldDeltas.length);
 
-    final int indexOfChange = _compareNewAndOldForChangeIndex(
-      newChars: newChars,
+    int commonPrefixLength = 0;
+    while (commonPrefixLength < newChars.length &&
+        commonPrefixLength < oldChars.length &&
+        newChars[commonPrefixLength] == oldChars[commonPrefixLength]) {
+      commonPrefixLength++;
+    }
+
+    if (commonPrefixLength == newChars.length &&
+        commonPrefixLength == oldChars.length) {
+      return newDeltas;
+    }
+
+    int oldSuffixStart = oldChars.length;
+    int newSuffixStart = newChars.length;
+    while (oldSuffixStart > commonPrefixLength &&
+        newSuffixStart > commonPrefixLength &&
+        oldChars[oldSuffixStart - 1] == newChars[newSuffixStart - 1]) {
+      oldSuffixStart--;
+      newSuffixStart--;
+    }
+
+    final List<String> insertedChars = newChars.sublist(
+      commonPrefixLength,
+      newSuffixStart,
+    );
+    final TextMetadata insertedMetadata = _metadataForInsertedText(
+      commonPrefixLength,
       oldDeltas: oldDeltas,
-      minLength: minLength,
+      replacesExistingText: oldSuffixStart > commonPrefixLength,
     );
 
-    if (indexOfChange == -1) return newDeltas;
+    newDeltas.replaceRange(
+      commonPrefixLength,
+      oldSuffixStart,
+      insertedChars.map(
+        (String char) => TextDelta(
+          char: char,
+          metadata: insertedMetadata,
+        ),
+      ),
+    );
 
-    final int lengthOfChange = maxLength - minLength;
-
-    if (minLength == oldDeltas.length) {
-      final TextMetadata newMetadata = metadataToggled
-          ? (metadata ??
-              oldDeltas.elementAtOrNull(indexOfChange - 1)?.metadata ??
-              RichTextEditorController.defaultMetadata)
-          : oldDeltas.elementAtOrNull(indexOfChange - 1)?.metadata ??
-              metadata ??
-              RichTextEditorController.defaultMetadata;
-      final int iterationLimit = lengthOfChange + indexOfChange;
-      for (int i = indexOfChange; i < iterationLimit; i++) {
-        newDeltas.insert(
-          i,
-          TextDelta(char: newChars[i], metadata: newMetadata),
-        );
-      }
-    } else {
-      newDeltas.removeRange(indexOfChange, indexOfChange + lengthOfChange);
-    }
     return newDeltas;
   }
 
-  int _compareNewAndOldForChangeIndex({
-    required List<String> newChars,
+  TextMetadata _metadataForInsertedText(
+    int index, {
     required TextDeltas oldDeltas,
-    required int minLength,
+    required bool replacesExistingText,
   }) {
-    if (newChars.isEmpty || oldDeltas.isEmpty) return 0;
-    for (int i = 0; i < minLength; i++) {
-      final String newChar = newChars[i];
-      final String oldChar = oldDeltas[i].char;
-      if (newChar != oldChar) return i;
+    if (metadataToggled) {
+      return metadata ??
+          oldDeltas.elementAtOrNull(index - 1)?.metadata ??
+          RichTextEditorController.defaultMetadata;
     }
 
-    if (newChars.length == oldDeltas.length) return -1;
+    if (replacesExistingText) {
+      return oldDeltas.elementAtOrNull(index)?.metadata ??
+          oldDeltas.elementAtOrNull(index - 1)?.metadata ??
+          metadata ??
+          RichTextEditorController.defaultMetadata;
+    }
 
-    return minLength;
+    return oldDeltas.elementAtOrNull(index - 1)?.metadata ??
+        metadata ??
+        RichTextEditorController.defaultMetadata;
   }
 
   void applyDefaultMetadataChange(TextMetadata changedMetadata) {
@@ -296,6 +314,22 @@ class _RichTextEditorController extends TextEditingController {
     notifyListeners();
   }
 
+  void _applyStyleChange({
+    required TextMetadataChange change,
+    required TextMetadata Function(TextMetadata metadata) update,
+  }) {
+    final TextMetadata changedMetadata = update(
+      metadata ?? RichTextEditorController.defaultMetadata,
+    );
+
+    changeStyleOnSelectionChange(
+      changedMetadata: changedMetadata,
+      change: change,
+      modifiedDeltas: deltas.copy,
+      selection: selection,
+    );
+  }
+
   /// Applies the [newMetadata] to the [deltas] in the [selection] by the [change].
   ///
   /// use [TextMetadataChange.all] to apply change to more than one metadata field change.
@@ -324,122 +358,77 @@ class _RichTextEditorController extends TextEditingController {
 
   /// Toggles the [TextMetadata.fontWeight] between [FontWeight.normal] and [FontWeight.w700].
   void toggleBold() {
-    final TextMetadata tempMetadata =
-        metadata ?? RichTextEditorController.defaultMetadata;
-    final TextMetadata changedMetadata = tempMetadata.copyWith(
-      fontWeight: tempMetadata.fontWeight == FontWeight.normal
-          ? FontWeight.w700
-          : FontWeight.normal,
-    );
-
-    changeStyleOnSelectionChange(
-      changedMetadata: changedMetadata,
+    _applyStyleChange(
       change: TextMetadataChange.fontWeight,
-      modifiedDeltas: deltas.copy,
-      selection: selection.copyWith(),
+      update: (TextMetadata metadata) => metadata.copyWith(
+        fontWeight: metadata.fontWeight == FontWeight.normal
+            ? FontWeight.w700
+            : FontWeight.normal,
+      ),
     );
   }
 
   /// Toggles the [TextMetadata.fontStyle] between [FontStyle.normal] and [FontStyle.italic].
   void toggleItalic() {
-    final TextMetadata tempMetadata =
-        metadata ?? RichTextEditorController.defaultMetadata;
-
-    final TextMetadata changedMetadata = tempMetadata.copyWith(
-      fontStyle: tempMetadata.fontStyle == FontStyle.italic
-          ? FontStyle.normal
-          : FontStyle.italic,
-    );
-    changeStyleOnSelectionChange(
-      changedMetadata: changedMetadata,
+    _applyStyleChange(
       change: TextMetadataChange.fontStyle,
-      modifiedDeltas: deltas.copy,
-      selection: selection,
+      update: (TextMetadata metadata) => metadata.copyWith(
+        fontStyle: metadata.fontStyle == FontStyle.italic
+            ? FontStyle.normal
+            : FontStyle.italic,
+      ),
     );
   }
 
   /// Toggles the [TextMetadata.decoration] between [TextDecorationEnum.none] and [TextDecorationEnum.underline].
   void toggleUnderline() {
-    final TextMetadata tempMetadata =
-        metadata ?? RichTextEditorController.defaultMetadata;
-
-    final TextMetadata changedMetadata = tempMetadata.copyWith(
-      decoration: tempMetadata.decoration == TextDecorationEnum.underline
-          ? TextDecorationEnum.none
-          : TextDecorationEnum.underline,
-    );
-
-    changeStyleOnSelectionChange(
-      changedMetadata: changedMetadata,
+    _applyStyleChange(
       change: TextMetadataChange.fontDecoration,
-      modifiedDeltas: deltas.copy,
-      selection: selection,
+      update: (TextMetadata metadata) => metadata.copyWith(
+        decoration: metadata.decoration == TextDecorationEnum.underline
+            ? TextDecorationEnum.none
+            : TextDecorationEnum.underline,
+      ),
     );
   }
 
   /// Toggles the [TextMetadata.decoration] between [TextDecorationEnum.none] and [TextDecorationEnum.lineThrough].
   void toggleSuperscript() {
-    final TextMetadata tempMetadata =
-        metadata ?? RichTextEditorController.defaultMetadata;
-
-    final TextMetadata changedMetadata = tempMetadata.copyWith(
-      fontFeatures: tempMetadata.fontFeatures?.firstOrNull ==
-              const FontFeature.superscripts()
-          ? const []
-          : const [FontFeature.superscripts()],
-    );
-
-    changeStyleOnSelectionChange(
-      changedMetadata: changedMetadata,
+    _applyStyleChange(
       change: TextMetadataChange.fontFeatures,
-      modifiedDeltas: deltas.copy,
-      selection: selection,
+      update: (TextMetadata metadata) => metadata.copyWith(
+        fontFeatures: metadata.fontFeatures?.firstOrNull ==
+                const FontFeature.superscripts()
+            ? const []
+            : const [FontFeature.superscripts()],
+      ),
     );
   }
 
   /// Toggles the [TextMetadata.fontFeatures] between empty list and [FontFeature.subscripts()].
   void toggleSubscript() {
-    final TextMetadata tempMetadata =
-        metadata ?? RichTextEditorController.defaultMetadata;
-
-    final TextMetadata changedMetadata = tempMetadata.copyWith(
-      fontFeatures: tempMetadata.fontFeatures?.firstOrNull ==
-              const FontFeature.subscripts()
-          ? const []
-          : const [FontFeature.subscripts()],
-    );
-
-    changeStyleOnSelectionChange(
-      changedMetadata: changedMetadata,
+    _applyStyleChange(
       change: TextMetadataChange.fontFeatures,
-      modifiedDeltas: deltas.copy,
-      selection: selection,
+      update: (TextMetadata metadata) => metadata.copyWith(
+        fontFeatures:
+            metadata.fontFeatures?.firstOrNull == const FontFeature.subscripts()
+                ? const []
+                : const [FontFeature.subscripts()],
+      ),
     );
   }
 
   void changeColor(Color color) {
-    final TextMetadata changedMetadata =
-        (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
-      color: color,
-    );
-    changeStyleOnSelectionChange(
-      changedMetadata: changedMetadata,
+    _applyStyleChange(
       change: TextMetadataChange.color,
-      modifiedDeltas: deltas.copy,
-      selection: selection,
+      update: (TextMetadata metadata) => metadata.copyWith(color: color),
     );
   }
 
   void changeFontSize(double fontSize) {
-    final TextMetadata changedMetadata =
-        (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
-      fontSize: fontSize,
-    );
-    changeStyleOnSelectionChange(
-      changedMetadata: changedMetadata,
+    _applyStyleChange(
       change: TextMetadataChange.fontSize,
-      modifiedDeltas: deltas.copy,
-      selection: selection,
+      update: (TextMetadata metadata) => metadata.copyWith(fontSize: fontSize),
     );
   }
 

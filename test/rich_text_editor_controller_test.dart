@@ -204,6 +204,69 @@ void main() {
       );
 
       test(
+        'text edits can replace graphemes without changing text length',
+        () {
+          final controller = RichTextEditorController(text: 'cat');
+
+          controller.value = const TextEditingValue(
+            text: 'cut',
+            selection: TextSelection.collapsed(offset: 2),
+          );
+
+          expect(controller.deltas.text, 'cut');
+          expect(
+            controller.deltas.map((TextDelta delta) => delta.char),
+            ['c', 'u', 't'],
+          );
+        },
+      );
+
+      test(
+        'replacement text inherits metadata from replaced range',
+        () {
+          final redMetadata = RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.red,
+          );
+          final blueMetadata =
+              RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.blue,
+          );
+          final controller = RichTextEditorController(
+            deltas: [
+              TextDelta(char: 'a', metadata: redMetadata),
+              TextDelta(char: 'b', metadata: blueMetadata),
+              TextDelta(char: 'c', metadata: redMetadata),
+            ],
+          );
+
+          controller.value = const TextEditingValue(
+            text: 'aXYc',
+            selection: TextSelection.collapsed(offset: 3),
+          );
+
+          expect(controller.deltas.text, 'aXYc');
+          expect(controller.deltas[1].metadata?.color, Colors.blue);
+          expect(controller.deltas[2].metadata?.color, Colors.blue);
+        },
+      );
+
+      test(
+        'replacement diff handles grapheme clusters',
+        () {
+          final controller = RichTextEditorController(text: 'a😀c');
+
+          controller.value = const TextEditingValue(
+            text: 'a👩‍💻c',
+            selection: TextSelection.collapsed(offset: 6),
+          );
+
+          expect(controller.deltas.text, 'a👩‍💻c');
+          expect(controller.deltas.length, 3);
+          expect(controller.deltas[1].char, '👩‍💻');
+        },
+      );
+
+      test(
         'metadata equality compares font feature contents',
         () {
           final metadata1 = RichTextEditorController.defaultMetadata.copyWith(
