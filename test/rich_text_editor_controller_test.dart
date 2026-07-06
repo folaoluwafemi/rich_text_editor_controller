@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rich_text_editor_controller/rich_text_editor_controller.dart';
 import 'package:rich_text_editor_controller/src/text_editor/models/text_deltas/text_deltas.dart'
     show TextDeltasUtils;
+import 'package:rich_text_editor_controller/src/text_editor/ui/text_span_builder.dart'
+    show RichTextSpanBuilder;
 
 void main() {
   final List<TextDelta> someDeltas = [
@@ -291,6 +293,32 @@ void main() {
           expect(newDeltas.text, 'aXYc');
           expect(newDeltas[1].metadata?.color, Colors.blue);
           expect(newDeltas[2].metadata?.color, Colors.blue);
+        },
+      );
+
+      test(
+        'text span builder coalesces adjacent matching metadata',
+        () {
+          final redMetadata = RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.red,
+          );
+          final blueMetadata =
+              RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.blue,
+          );
+
+          final textSpan = RichTextSpanBuilder.build(
+            deltas: [
+              TextDelta(char: 'a', metadata: redMetadata),
+              TextDelta(char: 'b', metadata: redMetadata),
+              TextDelta(char: 'c', metadata: blueMetadata),
+            ],
+            metadata: null,
+          );
+
+          expect(textSpan.children, hasLength(2));
+          expect((textSpan.children![0] as TextSpan).text, 'ab');
+          expect((textSpan.children![1] as TextSpan).text, 'c');
         },
       );
 

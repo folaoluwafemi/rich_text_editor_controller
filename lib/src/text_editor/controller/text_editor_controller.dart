@@ -383,38 +383,12 @@ class _RichTextEditorController extends TextEditingController {
     required BuildContext context,
     TextStyle? style,
     required bool withComposing,
-  }) {
-    final List<TextSpan> spanChildren = [];
-    final StringBuffer currentText = StringBuffer();
-    TextMetadata? currentMetadata;
-
-    void addCurrentSpan() {
-      if (currentText.isEmpty) return;
-      spanChildren.add(
-        TextSpan(
-          text: currentText.toString(),
-          style: currentMetadata?.style ??
-              RichTextEditorController.defaultMetadata.style,
-        ),
+  }) =>
+      RichTextSpanBuilder.build(
+        deltas: deltas,
+        metadata: metadata,
+        style: style,
       );
-      currentText.clear();
-    }
-
-    for (final TextDelta delta in deltas) {
-      if (currentText.isNotEmpty && delta.metadata != currentMetadata) {
-        addCurrentSpan();
-      }
-      currentMetadata = delta.metadata;
-      currentText.write(delta.char);
-    }
-    addCurrentSpan();
-
-    final TextSpan textSpan = TextSpan(
-      style: metadata?.styleWithoutFontFeatures ?? style,
-      children: spanChildren,
-    );
-    return textSpan;
-  }
 
   @override
   void dispose() {
