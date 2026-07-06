@@ -1,6 +1,8 @@
 part of 'text_deltas.dart';
 
 abstract class TextDeltasUtils {
+  static const String bulletPoint = '•';
+
   static TextDeltas deltasFromString(
     String string, [
     TextMetadata? metadata,
@@ -110,6 +112,41 @@ abstract class TextDeltasUtils {
     }
 
     return modifiedDeltas;
+  }
+
+  static TextDeltas applyBulletListChange({
+    required TextDeltas modifiedDeltas,
+    required TextDeltas oldDeltas,
+    required TextMetadata? currentMetadata,
+  }) {
+    final List<String> oldChars = oldDeltas.text.chars;
+    final List<String> newChars = modifiedDeltas.text.chars;
+
+    if (newChars.isEmpty || oldChars.length > newChars.length) {
+      return modifiedDeltas;
+    }
+
+    if (newChars.last != '\n') return modifiedDeltas;
+
+    const String bulletValue = '\n $bulletPoint ';
+    final TextMetadata fallbackMetadata =
+        currentMetadata ?? const TextMetadata();
+    final TextDeltas bulletDeltas = List.generate(
+      bulletValue.length,
+      (int index) => TextDelta(
+        char: bulletValue[index],
+        metadata: index != bulletValue.length - 2
+            ? currentMetadata
+            : fallbackMetadata.copyWith(fontWeight: FontWeight.bold),
+      ),
+    );
+
+    return modifiedDeltas.copy
+      ..replaceRange(
+        modifiedDeltas.length - 1,
+        modifiedDeltas.length,
+        bulletDeltas,
+      );
   }
 
   static TextMetadata metadataAtOrBeforeIndex({

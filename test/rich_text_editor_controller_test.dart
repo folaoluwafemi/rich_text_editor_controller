@@ -439,6 +439,31 @@ void main() {
       );
 
       test(
+        'text delta utility applies bullet list changes',
+        () {
+          final metadata = RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.red,
+          );
+          final oldDeltas = TextDeltasUtils.deltasFromString('a', metadata);
+          final modifiedDeltas = TextDeltasUtils.deltasFromString(
+            'a\n',
+            metadata,
+          );
+
+          final newDeltas = TextDeltasUtils.applyBulletListChange(
+            modifiedDeltas: modifiedDeltas,
+            oldDeltas: oldDeltas,
+            currentMetadata: metadata,
+          );
+
+          expect(newDeltas.text, 'a\n ${TextDeltasUtils.bulletPoint} ');
+          expect(newDeltas[3].char, TextDeltasUtils.bulletPoint);
+          expect(newDeltas[3].metadata?.fontWeight, FontWeight.bold);
+          expect(newDeltas[4].metadata?.fontWeight, FontWeight.w400);
+        },
+      );
+
+      test(
         'text span builder coalesces adjacent matching metadata',
         () {
           final redMetadata = RichTextEditorController.defaultMetadata.copyWith(

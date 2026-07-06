@@ -144,49 +144,22 @@ class _RichTextEditorController extends TextEditingController {
     return TextDeltasUtils.graphemeIndexForTextOffset(text, offset);
   }
 
-  static const String bulletPoint = '•';
-
   List<TextDelta> modifyDeltasForBulletListChange(
     List<TextDelta> modifiedDeltas,
     List<TextDelta> oldDeltas,
   ) {
-    final List<String> oldChars = oldDeltas.text.characters.toList();
-    final List<String> newChars = modifiedDeltas.text.characters.toList();
+    final TextDeltas listDeltas = TextDeltasUtils.applyBulletListChange(
+      modifiedDeltas: modifiedDeltas,
+      oldDeltas: oldDeltas,
+      currentMetadata: metadata,
+    );
 
-    if (oldChars.length > newChars.length) return modifiedDeltas;
-
-    if (newChars.last == '\n') {
-      const String bulletValue = '\n $bulletPoint ';
-
-      final TextDeltas bulletDeltas = List.generate(
-        bulletValue.length,
-        (index) => TextDelta(
-          char: bulletValue[index],
-
-          /// adding this check so that the character typed after this does not inherit the bullet point's metadata
-          /// hence the restoration back to the [this] controller's [metadata]
-          metadata: (index != bulletValue.length - 2)
-              ? metadata
-              : (metadata ?? RichTextEditorController.defaultMetadata).copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-        ),
-      );
-
-      final TextDeltas deltas = modifiedDeltas.copy
-        ..replaceRange(
-          modifiedDeltas.length - 1,
-          modifiedDeltas.length,
-          bulletDeltas,
-        );
-
-      text = deltas.text;
+    if (listDeltas.text != modifiedDeltas.text) {
+      text = listDeltas.text;
       selection = TextSelection.collapsed(offset: text.length);
-
-      return deltas;
     }
 
-    return modifiedDeltas;
+    return listDeltas;
   }
 
   void applyDefaultMetadataChange(TextMetadata changedMetadata) {
