@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rich_text_editor_controller/rich_text_editor_controller.dart';
+import 'package:rich_text_editor_controller/src/text_editor/models/text_deltas/text_deltas.dart'
+    show TextDeltasUtils;
 
 void main() {
   final List<TextDelta> someDeltas = [
@@ -263,6 +265,32 @@ void main() {
           expect(controller.deltas.text, 'a👩‍💻c');
           expect(controller.deltas.length, 3);
           expect(controller.deltas[1].char, '👩‍💻');
+        },
+      );
+
+      test(
+        'text delta edit utility applies replacement edits',
+        () {
+          final blueMetadata =
+              RichTextEditorController.defaultMetadata.copyWith(
+            color: Colors.blue,
+          );
+          final oldDeltas = TextDeltasUtils.deltasFromString('abc')
+              .map(
+                (TextDelta delta) => delta.copyWith(metadata: blueMetadata),
+              )
+              .toList();
+
+          final newDeltas = TextDeltasUtils.applyTextEdit(
+            newText: 'aXYc',
+            oldDeltas: oldDeltas,
+            currentMetadata: null,
+            metadataToggled: false,
+          );
+
+          expect(newDeltas.text, 'aXYc');
+          expect(newDeltas[1].metadata?.color, Colors.blue);
+          expect(newDeltas[2].metadata?.color, Colors.blue);
         },
       );
 

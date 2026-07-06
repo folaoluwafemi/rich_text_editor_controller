@@ -72,9 +72,11 @@ class _RichTextEditorController extends TextEditingController {
 
   void _internalControllerListener() {
     if (text == deltas.text) return;
-    TextDeltas newDeltas = _compareNewStringAndOldTextDeltasForChanges(
-      text,
-      deltas.copy,
+    TextDeltas newDeltas = TextDeltasUtils.applyTextEdit(
+      newText: text,
+      oldDeltas: deltas.copy,
+      currentMetadata: metadata,
+      metadataToggled: metadataToggled,
     );
 
     if (isListMode && newDeltas.length != deltas.length) {
@@ -185,84 +187,6 @@ class _RichTextEditorController extends TextEditingController {
     }
 
     return modifiedDeltas;
-  }
-
-  TextDeltas _compareNewStringAndOldTextDeltasForChanges(
-    String text,
-    TextDeltas oldDeltas,
-  ) {
-    if (text.isEmpty) return [];
-    final List<String> newChars = text.characters.toList();
-    final List<String> oldChars =
-        oldDeltas.map((TextDelta delta) => delta.char).toList();
-    final TextDeltas newDeltas = oldDeltas.copy;
-
-    int commonPrefixLength = 0;
-    while (commonPrefixLength < newChars.length &&
-        commonPrefixLength < oldChars.length &&
-        newChars[commonPrefixLength] == oldChars[commonPrefixLength]) {
-      commonPrefixLength++;
-    }
-
-    if (commonPrefixLength == newChars.length &&
-        commonPrefixLength == oldChars.length) {
-      return newDeltas;
-    }
-
-    int oldSuffixStart = oldChars.length;
-    int newSuffixStart = newChars.length;
-    while (oldSuffixStart > commonPrefixLength &&
-        newSuffixStart > commonPrefixLength &&
-        oldChars[oldSuffixStart - 1] == newChars[newSuffixStart - 1]) {
-      oldSuffixStart--;
-      newSuffixStart--;
-    }
-
-    final List<String> insertedChars = newChars.sublist(
-      commonPrefixLength,
-      newSuffixStart,
-    );
-    final TextMetadata insertedMetadata = _metadataForInsertedText(
-      commonPrefixLength,
-      oldDeltas: oldDeltas,
-      replacesExistingText: oldSuffixStart > commonPrefixLength,
-    );
-
-    newDeltas.replaceRange(
-      commonPrefixLength,
-      oldSuffixStart,
-      insertedChars.map(
-        (String char) => TextDelta(
-          char: char,
-          metadata: insertedMetadata,
-        ),
-      ),
-    );
-
-    return newDeltas;
-  }
-
-  TextMetadata _metadataForInsertedText(
-    int index, {
-    required TextDeltas oldDeltas,
-    required bool replacesExistingText,
-  }) {
-    if (metadataToggled) {
-      return metadata ??
-          oldDeltas.elementAtOrNull(index - 1)?.metadata ??
-          RichTextEditorController.defaultMetadata;
-    }
-
-    if (replacesExistingText) {
-      return oldDeltas.elementAtOrNull(index)?.metadata ??
-          oldDeltas.elementAtOrNull(index - 1)?.metadata ??
-          metadata ??
-          RichTextEditorController.defaultMetadata;
-    }
-
-    return oldDeltas.elementAtOrNull(index - 1)?.metadata ??
-        metadata ??
-        RichTextEditorController.defaultMetadata;
   }
 
   void applyDefaultMetadataChange(TextMetadata changedMetadata) {
